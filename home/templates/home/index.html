@@ -3,10 +3,306 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lily</title>
+    <title>Lily — AI Slop Detector</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+      :root {
+        --ink: #0f1a1c;
+        --ink-muted: #41565b;
+        --paper: #f4f1e9;
+        --accent: #d96c2c;
+        --accent-dark: #a44b1e;
+        --mist: rgba(15, 26, 28, 0.08);
+        --glow: rgba(217, 108, 44, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
+          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
+          var(--paper);
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: linear-gradient(145deg, #ffe2c6, #d96c2c);
+        box-shadow: 0 10px 25px var(--glow);
+        display: grid;
+        place-items: center;
+        color: #5a210a;
+        font-weight: 700;
+      }
+
+      .nav {
+        display: flex;
+        gap: 16px;
+        font-size: 0.95rem;
+        color: var(--ink-muted);
+      }
+
+      .nav a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 36px;
+        margin-top: 56px;
+        align-items: center;
+      }
+
+      .hero h1 {
+        font-family: "Fraunces", serif;
+        font-size: clamp(2.6rem, 5vw, 4.4rem);
+        line-height: 1.05;
+        margin: 0 0 18px;
+      }
+
+      .hero p {
+        font-size: 1.1rem;
+        color: var(--ink-muted);
+        margin: 0 0 26px;
+        max-width: 520px;
+      }
+
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .btn {
+        border: none;
+        padding: 12px 22px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.98rem;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff8f2;
+        box-shadow: 0 12px 25px var(--glow);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--mist);
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 35px var(--glow);
+      }
+
+      .panel {
+        background: #ffffffb5;
+        border: 1px solid var(--mist);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.08);
+        backdrop-filter: blur(6px);
+      }
+
+      .signal {
+        display: grid;
+        gap: 18px;
+      }
+
+      .signal .meter {
+        height: 12px;
+        background: linear-gradient(90deg, #f6d2b9, #d96c2c 60%, #7a2f13 100%);
+        border-radius: 999px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .signal .meter::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        animation: shimmer 2.4s ease-in-out infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      .features {
+        margin-top: 70px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+      }
+
+      .feature-card {
+        padding: 20px 22px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid var(--mist);
+        box-shadow: 0 12px 24px rgba(15, 26, 28, 0.08);
+        transition: transform 0.2s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .feature-card h3 {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+      }
+
+      .feature-card p {
+        margin: 0;
+        color: var(--ink-muted);
+        font-size: 0.95rem;
+      }
+
+      .footer {
+        margin-top: 60px;
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      @media (max-width: 700px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .nav {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
   </head>
   <body>
-    <h1>Lily</h1>
-    <p>Home page placeholder.</p>
+    <div class="page">
+      <header>
+        <div class="brand">
+          <div class="brand-badge">L</div>
+          <div>
+            Lily
+            <div style="font-size: 0.8rem; color: var(--ink-muted); font-weight: 400;">
+              AI slop detector
+            </div>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="#signal">Signal</a>
+          <a href="#insights">Insights</a>
+          <a href="#workflow">Workflow</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div>
+          <h1>Spot the synthetic. Keep the signal.</h1>
+          <p>
+            Lily helps teams identify low-quality AI output before it ships. Score content,
+            trace weak spots, and keep your voice sharp.
+          </p>
+          <div class="cta">
+            <button class="btn btn-primary">Run a scan</button>
+            <button class="btn btn-secondary">View dashboard</button>
+          </div>
+        </div>
+        <div class="panel signal" id="signal">
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--ink-muted);">
+            <span>Signal clarity</span>
+            <span>82%</span>
+          </div>
+          <div class="meter" aria-hidden="true"></div>
+          <div style="font-size: 0.95rem; color: var(--ink-muted);">
+            Highlights: repetition spikes, template phrasing, low factual anchors.
+          </div>
+          <div style="display: grid; gap: 10px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Originality</span>
+              <strong>High</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Specificity</span>
+              <strong>Medium</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Evidence</span>
+              <strong>Needs work</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="features" id="insights">
+        <div class="feature-card">
+          <h3>Pattern heatmaps</h3>
+          <p>Spot repeated phrasing and recycled structures in seconds.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Model fingerprints</h3>
+          <p>Compare outputs against known model quirks and style drift.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Confidence scoring</h3>
+          <p>Blend heuristics and signals into one clear verdict.</p>
+        </div>
+        <div class="feature-card" id="workflow">
+          <h3>Workflow ready</h3>
+          <p>Use Lily in review queues, CMS pipelines, or batch audits.</p>
+        </div>
+      </section>
+
+      <div class="footer">
+        <span>Built to protect brand voice and trust.</span>
+        <span>Need API access? Reach out.</span>
+      </div>
+    </div>
   </body>
 </html>
