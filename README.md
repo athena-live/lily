@@ -178,7 +178,7 @@ User=lily
 Group=lily
 WorkingDirectory=/opt/lily
 EnvironmentFile=/opt/lily/.env
-ExecStart=/opt/lily/.venv/bin/gunicorn lilly.wsgi:application \
+ExecStart=/opt/lily/.venv/bin/gunicorn lily.wsgi:application \
   --bind unix:/run/lily/gunicorn.sock \
   --workers 3 \
   --timeout 600 \
