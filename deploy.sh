@@ -4,7 +4,7 @@ set -euo pipefail
 APP_DIR="/srv/lily"
 APP_USER="lily"
 SERVICE_NAME="lily"
-GIT_SSH_KEY="/srv/lily/.ssh/armenmerikyan"
+GIT_SSH_KEY="/home/lily/.ssh/athenalive"
 STATIC_DIR="$APP_DIR/staticfiles"
 MEDIA_DIR="$APP_DIR/media"
 
