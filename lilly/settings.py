@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'deployment_versioning',
     'access_control',
     'api_integrations',
+    'home',
 ]
 
 MIDDLEWARE = [
