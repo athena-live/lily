@@ -145,14 +145,22 @@
         <span>Service</span>
         <strong>{{ current_plan_name }}</strong>
       </div>
+      {% if not has_active_subscription %}
+        <div class="section">
+          <div class="plan-note">No active subscription yet. Complete checkout to unlock your service.</div>
+          <a class="btn" href="{% url 'home:subscription' %}">Subscribe now</a>
+        </div>
+      {% endif %}
 
       {% if service_plans %}
         <div class="section">
           <div class="section-title">Change service</div>
-          <div class="plan-note">Select a different plan to upgrade or downgrade.</div>
-          <form method="post" action="{% url 'home:subscription' %}">
+          <div class="plan-note">
+            Select a different plan to upgrade or downgrade. Updates sync automatically after Stripe
+            authorizes the change.
+          </div>
+          <form method="post" action="{% url 'home:change_subscription' %}">
             {% csrf_token %}
-            <input type="hidden" name="next" value="{% url 'home:profile' %}" />
             <div class="plan-list">
               {% for plan in service_plans %}
                 <label class="plan-option">

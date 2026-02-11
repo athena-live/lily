@@ -91,8 +91,8 @@
     <div class="card">
       <h1>Choose your plan</h1>
       <p class="meta">
-        Select a subscription to continue. Once you complete checkout, come back here and
-        confirm below so we can unlock your workspace.
+        Select a subscription to continue. After checkout, your profile updates
+        automatically within a few seconds.
       </p>
 
       {% if subscription_selected %}
@@ -101,14 +101,15 @@
 
       <stripe-pricing-table
         pricing-table-id="{{ stripe_pricing_table_id }}"
-        publishable-key="{{ stripe_publishable_key }}">
+        publishable-key="{{ stripe_publishable_key }}"
+        client-reference-id="{{ client_reference_id }}"
+        customer-email="{{ customer_email }}">
       </stripe-pricing-table>
 
-      <form method="post" class="actions">
-        {% csrf_token %}
-        <button class="btn" type="submit">I completed checkout</button>
+      <div class="actions">
+        <a class="btn" href="{% url 'home:profile' %}">Back to profile</a>
         <a class="btn btn-secondary" href="/">Back to home</a>
-      </form>
+      </div>
     </div>
   </body>
 </html>

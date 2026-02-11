@@ -6,3 +6,4 @@ django-allauth
 django-sendgrid-v5
 requests
 PyJWT
+stripe

@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.db.models import Q
 
 from home.models import SubscriptionSelection
 
@@ -24,7 +25,11 @@ class SubscriptionRequiredMiddleware:
             ):
                 return self.get_response(request)
 
-            if not SubscriptionSelection.objects.filter(user=request.user).exists():
+            has_subscription = SubscriptionSelection.objects.filter(user=request.user).filter(
+                Q(stripe_subscription_id__isnull=False, stripe_subscription_id__gt="")
+                | Q(stripe_price_id__isnull=False, stripe_price_id__gt="")
+            )
+            if not has_subscription.exists():
                 return redirect(self.subscription_path)
 
         return self.get_response(request)

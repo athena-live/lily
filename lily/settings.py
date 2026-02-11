@@ -222,6 +222,7 @@ else:
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PRICING_TABLE_ID = os.environ.get("STRIPE_PRICING_TABLE_ID", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 
 def _parse_subscription_plans(raw_value):
