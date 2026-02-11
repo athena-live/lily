@@ -27,7 +27,7 @@ def profile(request):
             (plan["name"] for plan in plans if plan.get("price_id") == current_price_id),
             None,
         )
-        current_plan_name = matched or f"Service ID {current_price_id}"
+        current_plan_name = matched or _get_stripe_service_name(current_price_id)
     context = {
         "current_plan_name": current_plan_name,
         "current_price_id": current_price_id,
@@ -35,6 +35,22 @@ def profile(request):
         "has_active_subscription": bool(selection and selection.stripe_subscription_id),
     }
     return render(request, "home/profile.html", context)
+
+
+def _get_stripe_service_name(price_id):
+    if not price_id or not settings.STRIPE_SECRET_KEY:
+        return "Service details unavailable"
+    try:
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        price = stripe.Price.retrieve(price_id, expand=["product"])
+    except stripe.error.StripeError:
+        return "Service details unavailable"
+    product = price.get("product")
+    if isinstance(product, dict):
+        name = product.get("name")
+        if name:
+            return name
+    return "Service details unavailable"
 
 
 @login_required
