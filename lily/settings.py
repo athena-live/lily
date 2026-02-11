@@ -194,6 +194,20 @@ ACCOUNT_EMAIL_CONFIRMATION_FROM_EMAIL = os.environ.get(
     "ACCOUNT_EMAIL_CONFIRMATION_FROM_EMAIL", DEFAULT_FROM_EMAIL
 )
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+SENDGRID_SANDBOX_MODE = os.environ.get("SENDGRID_SANDBOX_MODE", "False").lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
+SENDGRID_SANDBOX_MODE_IN_DEBUG = os.environ.get(
+    "SENDGRID_SANDBOX_MODE_IN_DEBUG", "False"
+).lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
 if SENDGRID_API_KEY:
     EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 else:
