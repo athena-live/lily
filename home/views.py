@@ -132,6 +132,8 @@ def cancel_subscription(request):
         selection.stripe_subscription_id,
         cancel_at_period_end=True,
     )
+    if not subscription.get("current_period_end"):
+        subscription = stripe.Subscription.retrieve(selection.stripe_subscription_id)
     selection.stripe_status = subscription.get("status", "") or ""
     selection.stripe_cancel_at_period_end = bool(
         subscription.get("cancel_at_period_end")
