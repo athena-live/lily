@@ -1,12 +1,18 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
 
 def index(request):
     return render(request, "home/index.html")
+
+
+@login_required
+def profile(request):
+    return render(request, "home/profile.html")
 
 
 def root_domain(request):
