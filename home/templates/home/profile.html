@@ -209,31 +209,7 @@
         </div>
       {% endif %}
 
-      {% if service_plans %}
-        <div class="section" id="change-plan">
-          <div class="section-title">Change plan</div>
-          <div class="plan-note">
-            Select a different plan to upgrade or downgrade. Updates sync automatically after Stripe
-            authorizes the change.
-          </div>
-          <form method="post" action="{% url 'home:change_subscription' %}">
-            {% csrf_token %}
-            <div class="plan-list">
-              {% for plan in service_plans %}
-                <label class="plan-option">
-                  <input
-                    type="radio"
-                    name="price_id"
-                    value="{{ plan.price_id }}"
-                    {% if plan.price_id == current_price_id %}checked{% endif %} />
-                  <span class="plan-name">{{ plan.name }}</span>
-                </label>
-              {% endfor %}
-            </div>
-            <button class="btn" type="submit">Update service</button>
-          </form>
-        </div>
-      {% else %}
+      {% if not has_active_subscription and not service_plans %}
         <div class="section">
           <div class="section-title">Service</div>
           <div class="plan-note">Add your Stripe price IDs in settings to enable plan changes.</div>
@@ -256,13 +232,40 @@
           <h2 id="planModalTitle">Manage your plan</h2>
           <div class="plan-note">Choose how you want to update your subscription.</div>
           <div class="modal-actions">
-            <a class="btn" href="#change-plan" data-close-modal>Change plan</a>
+            {% if service_plans %}
+              <a class="btn" href="#change-plan-form" data-open-plans>Change plan</a>
+            {% endif %}
             <form method="post" action="{% url 'home:cancel_subscription' %}">
               {% csrf_token %}
               <button class="btn btn-ghost" type="submit">Cancel plan</button>
             </form>
             <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
           </div>
+          {% if service_plans %}
+            <div class="section" id="change-plan-form">
+              <div class="section-title">Change plan</div>
+              <div class="plan-note">
+                Select a different plan to upgrade or downgrade. Updates sync automatically after
+                Stripe authorizes the change.
+              </div>
+              <form method="post" action="{% url 'home:change_subscription' %}">
+                {% csrf_token %}
+                <div class="plan-list">
+                  {% for plan in service_plans %}
+                    <label class="plan-option">
+                      <input
+                        type="radio"
+                        name="price_id"
+                        value="{{ plan.price_id }}"
+                        {% if plan.price_id == current_price_id %}checked{% endif %} />
+                      <span class="plan-name">{{ plan.name }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+                <button class="btn" type="submit">Update service</button>
+              </form>
+            </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}
@@ -271,6 +274,8 @@
       const openButtons = document.querySelectorAll("[data-open-modal]");
       const closeButtons = document.querySelectorAll("[data-close-modal]");
       const modal = document.querySelector("[data-modal]");
+      const planLink = document.querySelector("[data-open-plans]");
+      const planSection = document.getElementById("change-plan-form");
 
       const openModal = () => {
         if (!modal) return;
@@ -285,6 +290,12 @@
       };
 
       openButtons.forEach((button) => button.addEventListener("click", openModal));
+      if (planLink && planSection) {
+        planLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          planSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
       closeButtons.forEach((button) => button.addEventListener("click", closeModal));
 
       if (modal) {
