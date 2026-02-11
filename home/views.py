@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -32,10 +33,9 @@ def profile(request):
         "current_plan_name": current_plan_name,
         "current_price_id": current_price_id,
         "service_plans": plans,
-        "has_active_subscription": bool(
-            selection
-            and (selection.stripe_subscription_id or selection.stripe_price_id)
-        ),
+        "has_active_subscription": _is_subscription_active(selection),
+        "cancel_at_period_end": bool(selection and selection.stripe_cancel_at_period_end),
+        "cancel_at_date": selection.stripe_cancel_at if selection else None,
     }
     return render(request, "home/profile.html", context)
 
@@ -120,10 +120,19 @@ def cancel_subscription(request):
         return redirect("home:profile")
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
-    stripe.Subscription.modify(
+    subscription = stripe.Subscription.modify(
         selection.stripe_subscription_id,
         cancel_at_period_end=True,
     )
+    selection.stripe_status = subscription.get("status", "") or ""
+    selection.stripe_cancel_at_period_end = bool(
+        subscription.get("cancel_at_period_end")
+    )
+    selection.stripe_cancel_at = _from_unix_timestamp(subscription.get("cancel_at"))
+    selection.stripe_current_period_end = _from_unix_timestamp(
+        subscription.get("current_period_end")
+    )
+    selection.save()
     return redirect("home:profile")
 
 
@@ -278,6 +287,14 @@ def _upsert_selection_from_subscription(user, subscription):
     selection.stripe_subscription_id = subscription.get("id", "") or ""
     selection.stripe_price_id = price_id or ""
     selection.stripe_product_id = product_id or ""
+    selection.stripe_status = subscription.get("status", "") or ""
+    selection.stripe_cancel_at_period_end = bool(
+        subscription.get("cancel_at_period_end")
+    )
+    selection.stripe_cancel_at = _from_unix_timestamp(subscription.get("cancel_at"))
+    selection.stripe_current_period_end = _from_unix_timestamp(
+        subscription.get("current_period_end")
+    )
     selection.save()
 
 
@@ -323,6 +340,26 @@ def _get_price_and_product_from_invoice(invoice):
     price_id = price_details.get("price", "") or ""
     product_id = price_details.get("product", "") or ""
     return price_id, product_id
+
+
+def _from_unix_timestamp(value):
+    if not value:
+        return None
+    return timezone.datetime.fromtimestamp(value, tz=timezone.utc)
+
+
+def _is_subscription_active(selection):
+    if not selection:
+        return False
+    if not (selection.stripe_subscription_id or selection.stripe_price_id):
+        return False
+    if selection.stripe_status and selection.stripe_status not in ("active", "trialing"):
+        return False
+    if selection.stripe_cancel_at and selection.stripe_cancel_at <= timezone.now():
+        return False
+    if selection.stripe_current_period_end and selection.stripe_current_period_end <= timezone.now():
+        return False
+    return True
 
 
 def root_domain(request):

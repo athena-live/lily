@@ -200,6 +200,13 @@
           <div class="plan-note">View your plan or make changes.</div>
           <button class="btn btn-spaced" type="button" data-open-modal>View plan</button>
         </div>
+      {% elif cancel_at_period_end and cancel_at_date %}
+        <div class="section">
+          <div class="section-title">Plan status</div>
+          <div class="plan-note">
+            Your plan is set to cancel on {{ cancel_at_date|date:"M d, Y" }}.
+          </div>
+        </div>
       {% else %}
         <div class="section">
           <div class="plan-note">
