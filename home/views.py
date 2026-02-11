@@ -43,6 +43,7 @@ def profile(request):
         ),
         "plan_start_date": selection.stripe_current_period_start if selection else None,
         "username": request.user.username,
+        "subscription_status": selection.stripe_status if selection else "",
     }
     return render(request, "home/profile.html", context)
 

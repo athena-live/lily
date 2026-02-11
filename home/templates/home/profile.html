@@ -215,6 +215,14 @@
           {% endif %}
           <button class="btn btn-spaced" type="button" data-open-modal>View plan</button>
         </div>
+      {% elif subscription_status == "canceled" or (cancel_at_date and not cancel_in_future) %}
+        <div class="section">
+          <div class="section-title">Plan status</div>
+          <div class="plan-note">Your membership has been canceled.</div>
+          {% if cancel_at_date %}
+            <div class="plan-note">Ended on {{ cancel_at_date|date:"M d, Y" }}.</div>
+          {% endif %}
+        </div>
       {% elif cancel_at_period_end and cancel_at_date %}
         <div class="section">
           <div class="section-title">Plan status</div>
