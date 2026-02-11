@@ -32,7 +32,10 @@ def profile(request):
         "current_plan_name": current_plan_name,
         "current_price_id": current_price_id,
         "service_plans": plans,
-        "has_active_subscription": bool(selection and selection.stripe_subscription_id),
+        "has_active_subscription": bool(
+            selection
+            and (selection.stripe_subscription_id or selection.stripe_price_id)
+        ),
     }
     return render(request, "home/profile.html", context)
 
