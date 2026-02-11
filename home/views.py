@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from datetime import timezone as dt_timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -389,7 +390,7 @@ def _get_price_and_product_from_invoice(invoice):
 def _from_unix_timestamp(value):
     if not value:
         return None
-    return timezone.datetime.fromtimestamp(value, tz=timezone.utc)
+    return timezone.datetime.fromtimestamp(value, tz=dt_timezone.utc)
 
 
 def _is_subscription_active(selection):
