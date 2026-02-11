@@ -113,6 +113,9 @@ def stripe_webhook(request):
     elif event["type"] in ("customer.subscription.created", "customer.subscription.updated"):
         subscription = event["data"]["object"]
         _handle_subscription_event(subscription)
+    elif event["type"] in ("invoice.paid", "invoice.payment_succeeded", "invoice.finalized"):
+        invoice = event["data"]["object"]
+        _handle_invoice_event(invoice)
     elif event["type"] == "customer.subscription.deleted":
         subscription = event["data"]["object"]
         _handle_subscription_deleted(subscription)
@@ -171,6 +174,9 @@ def _handle_subscription_deleted(subscription):
 def _get_user_from_session(session):
     user_id = session.get("client_reference_id")
     customer_email = session.get("customer_email")
+    if not customer_email:
+        customer_id = session.get("customer")
+        customer_email = _get_customer_email(customer_id)
     return _resolve_user(user_id, customer_email)
 
 
@@ -178,6 +184,9 @@ def _get_user_from_subscription(subscription):
     metadata = subscription.get("metadata", {}) or {}
     user_id = metadata.get("user_id")
     customer_email = subscription.get("customer_email")
+    if not customer_email:
+        customer_id = subscription.get("customer")
+        customer_email = _get_customer_email(customer_id)
     return _resolve_user(user_id, customer_email)
 
 
@@ -196,6 +205,16 @@ def _resolve_user(user_id, customer_email):
     return None
 
 
+def _get_customer_email(customer_id):
+    if not customer_id:
+        return None
+    try:
+        customer = stripe.Customer.retrieve(customer_id)
+    except stripe.error.StripeError:
+        return None
+    return customer.get("email")
+
+
 def _upsert_selection_from_subscription(user, subscription):
     items = subscription.get("items", {}).get("data", [])
     price = items[0]["price"] if items else None
@@ -211,6 +230,16 @@ def _upsert_selection_from_subscription(user, subscription):
     selection.stripe_price_id = price_id or ""
     selection.stripe_product_id = product_id or ""
     selection.save()
+
+
+def _handle_invoice_event(invoice):
+    subscription_id = invoice.get("subscription")
+    if not subscription_id:
+        return
+    subscription = stripe.Subscription.retrieve(
+        subscription_id, expand=["items.data.price.product"]
+    )
+    _handle_subscription_event(subscription)
 
 
 def root_domain(request):
