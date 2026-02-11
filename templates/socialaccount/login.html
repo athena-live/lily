@@ -1,0 +1,21 @@
+{% extends "account/base.html" %}
+
+{% block title %}Continue with Google — Lily{% endblock %}
+
+{% block content %}
+  <h2>Confirm Google sign-in</h2>
+  <p>We'll use your Google account to create or access your Lily workspace.</p>
+
+  {% if form.errors %}
+    <div class="errors">We couldn't complete the sign-in. Please try again.</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-primary" type="submit">Continue</button>
+  </form>
+
+  <div class="links">
+    <a href="{% url 'account_login' %}">Back to email login</a>
+  </div>
+{% endblock %}

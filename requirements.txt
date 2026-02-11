@@ -2,3 +2,5 @@ django
 psycopg[binary]
 gunicorn
 python-dotenv
+django-allauth
+django-sendgrid-v5

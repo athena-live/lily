@@ -1,0 +1,22 @@
+{% extends "account/base.html" %}
+
+{% block title %}Finish setup — Lily{% endblock %}
+
+{% block content %}
+  <h2>Finish setup</h2>
+  <p>We just need a few details to finish your Google sign-up.</p>
+
+  {% if form.errors %}
+    <div class="errors">Please review the details below.</div>
+  {% endif %}
+
+  <form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Complete sign-up</button>
+  </form>
+
+  <div class="links">
+    <a href="{% url 'account_login' %}">Back to sign in</a>
+  </div>
+{% endblock %}

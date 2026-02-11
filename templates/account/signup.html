@@ -1,0 +1,50 @@
+{% extends "account/base.html" %}
+{% load socialaccount %}
+
+{% block title %}Create account — Lily{% endblock %}
+
+{% block content %}
+  <h2>Create account</h2>
+  <p>Start tracking slop with crisp, trustworthy analysis.</p>
+
+  {% if form.errors %}
+    <div class="errors">Please correct the errors below and try again.</div>
+  {% endif %}
+
+  <a class="btn btn-secondary social-btn" href="{% provider_login_url 'google' %}">
+    Sign up with Google
+  </a>
+
+  <div class="divider">or use email</div>
+
+  <form method="post" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+    <div class="field">
+      <label for="id_email">Work email</label>
+      {{ form.email }}
+    </div>
+    {% if form.username %}
+      <div class="field">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+      </div>
+    {% endif %}
+    <div class="field">
+      <label for="id_password1">Password</label>
+      {{ form.password1 }}
+    </div>
+    <div class="field">
+      <label for="id_password2">Confirm password</label>
+      {{ form.password2 }}
+    </div>
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+    <button class="btn btn-primary" type="submit">Create account</button>
+  </form>
+
+  <div class="links">
+    <a href="{% url 'account_login' %}">Already have an account? Sign in</a>
+  </div>
+  <p class="muted">We send a verification email for password signups.</p>
+{% endblock %}
