@@ -143,6 +143,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_ADAPTER = "lily.account_adapter.AccountAdapter"
 LOGIN_REDIRECT_URL = "/profile/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 
@@ -189,6 +190,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Email (SendGrid)
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@lily.local")
+ACCOUNT_EMAIL_CONFIRMATION_FROM_EMAIL = os.environ.get(
+    "ACCOUNT_EMAIL_CONFIRMATION_FROM_EMAIL", DEFAULT_FROM_EMAIL
+)
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 if SENDGRID_API_KEY:
     EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
