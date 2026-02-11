@@ -97,6 +97,12 @@
 
       {% if subscription_selected %}
         <div class="status">You already have a subscription on file.</div>
+      {% elif has_active_subscription %}
+        <div class="status">Subscription active. Redirecting…</div>
+      {% else %}
+        <div class="status" id="subscription-status">
+          Waiting for subscription activation…
+        </div>
       {% endif %}
 
       <stripe-pricing-table
@@ -111,5 +117,43 @@
         <a class="btn btn-secondary" href="/">Back to home</a>
       </div>
     </div>
+    <script>
+      (function () {
+        const statusEl = document.getElementById("subscription-status");
+        const statusUrl = "{% url 'home:subscription_status' %}";
+        const profileUrl = "{% url 'home:profile' %}";
+
+        if (!statusEl) return;
+
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        async function checkStatus() {
+          attempts += 1;
+          try {
+            const resp = await fetch(statusUrl, { credentials: "same-origin" });
+            if (!resp.ok) throw new Error("Request failed");
+            const data = await resp.json();
+            if (data.active) {
+              statusEl.textContent = "Subscription active. Redirecting…";
+              window.location.assign(profileUrl);
+              return;
+            }
+            const label = data.status ? `Status: ${data.status}` : "Waiting for subscription activation…";
+            statusEl.textContent = label;
+          } catch (err) {
+            statusEl.textContent = "Still waiting for activation…";
+          }
+
+          if (attempts < maxAttempts) {
+            window.setTimeout(checkStatus, 4000);
+          } else {
+            statusEl.textContent = "Activation can take a minute. Refresh this page if needed.";
+          }
+        }
+
+        window.setTimeout(checkStatus, 3000);
+      })();
+    </script>
   </body>
 </html>

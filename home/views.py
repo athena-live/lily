@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from datetime import timezone as dt_timezone
@@ -82,10 +82,22 @@ def subscription(request):
         "stripe_pricing_table_id": settings.STRIPE_PRICING_TABLE_ID,
         "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
         "subscription_selected": bool(selection and selection.stripe_subscription_id),
+        "has_active_subscription": _is_subscription_active(selection),
         "client_reference_id": str(request.user.id),
         "customer_email": request.user.email,
     }
     return render(request, "home/subscription.html", context)
+
+
+@login_required
+def subscription_status(request):
+    selection = SubscriptionSelection.objects.filter(user=request.user).first()
+    return JsonResponse(
+        {
+            "active": _is_subscription_active(selection),
+            "status": selection.stripe_status if selection else "",
+        }
+    )
 
 
 @login_required
