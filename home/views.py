@@ -35,13 +35,14 @@ def profile(request):
         "service_plans": plans,
         "has_active_subscription": _is_subscription_active(selection),
         "cancel_at_period_end": bool(selection and selection.stripe_cancel_at_period_end),
-        "cancel_at_date": selection.stripe_cancel_at if selection else None,
+        "cancel_at_date": _effective_cancel_date(selection),
         "cancel_in_future": bool(
             selection
-            and selection.stripe_cancel_at
-            and selection.stripe_cancel_at > timezone.now()
+            and _effective_cancel_date(selection)
+            and _effective_cancel_date(selection) > timezone.now()
         ),
         "plan_start_date": selection.stripe_current_period_start if selection else None,
+        "username": request.user.username,
     }
     return render(request, "home/profile.html", context)
 
@@ -141,6 +142,8 @@ def cancel_subscription(request):
     selection.stripe_current_period_end = _from_unix_timestamp(
         subscription.get("current_period_end")
     )
+    if selection.stripe_cancel_at_period_end and not selection.stripe_cancel_at:
+        selection.stripe_cancel_at = selection.stripe_current_period_end
     selection.save()
     return redirect("home:profile")
 
@@ -307,6 +310,8 @@ def _upsert_selection_from_subscription(user, subscription):
     selection.stripe_current_period_end = _from_unix_timestamp(
         subscription.get("current_period_end")
     )
+    if selection.stripe_cancel_at_period_end and not selection.stripe_cancel_at:
+        selection.stripe_cancel_at = selection.stripe_current_period_end
     selection.save()
 
 
@@ -376,6 +381,14 @@ def _is_subscription_active(selection):
     if selection.stripe_current_period_end and selection.stripe_current_period_end <= timezone.now():
         return False
     return True
+
+
+def _effective_cancel_date(selection):
+    if not selection:
+        return None
+    if selection.stripe_cancel_at:
+        return selection.stripe_cancel_at
+    return selection.stripe_current_period_end
 
 
 def root_domain(request):

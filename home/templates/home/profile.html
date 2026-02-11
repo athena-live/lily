@@ -180,7 +180,10 @@
   <body>
     <div class="card">
       <h1>Your profile</h1>
-      <div class="meta">Signed in as {{ request.user.email|default:request.user.username }}</div>
+      <div class="meta">
+        Signed in as {{ request.user.email|default:request.user.username }}
+        {% if username %}· {{ username }}{% endif %}
+      </div>
 
       <div class="row">
         <span>Account status</span>
