@@ -223,6 +223,28 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PRICING_TABLE_ID = os.environ.get("STRIPE_PRICING_TABLE_ID", "")
 
+
+def _parse_subscription_plans(raw_value):
+    plans = []
+    for entry in raw_value.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        if "|" in entry:
+            name, price_id = entry.split("|", 1)
+        elif ":" in entry:
+            name, price_id = entry.split(":", 1)
+        else:
+            continue
+        name = name.strip()
+        price_id = price_id.strip()
+        if name and price_id:
+            plans.append({"name": name, "price_id": price_id})
+    return plans
+
+
+SUBSCRIPTION_PLANS = _parse_subscription_plans(os.environ.get("SUBSCRIPTION_PLANS", ""))
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

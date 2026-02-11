@@ -14,7 +14,22 @@ def index(request):
 
 @login_required
 def profile(request):
-    return render(request, "home/profile.html")
+    selection = SubscriptionSelection.objects.filter(user=request.user).first()
+    plans = getattr(settings, "SUBSCRIPTION_PLANS", [])
+    current_price_id = selection.stripe_price_id if selection else ""
+    current_plan_name = "No service selected"
+    if current_price_id:
+        matched = next(
+            (plan["name"] for plan in plans if plan.get("price_id") == current_price_id),
+            None,
+        )
+        current_plan_name = matched or f"Service ID {current_price_id}"
+    context = {
+        "current_plan_name": current_plan_name,
+        "current_price_id": current_price_id,
+        "service_plans": plans,
+    }
+    return render(request, "home/profile.html", context)
 
 
 @login_required
@@ -24,7 +39,12 @@ def subscription(request):
         if selection is None:
             selection = SubscriptionSelection(user=request.user)
         posted_price_id = request.POST.get("price_id", "").strip()
-        if posted_price_id:
+        allowed_price_ids = {
+            plan.get("price_id")
+            for plan in getattr(settings, "SUBSCRIPTION_PLANS", [])
+            if plan.get("price_id")
+        }
+        if posted_price_id and (not allowed_price_ids or posted_price_id in allowed_price_ids):
             selection.stripe_price_id = posted_price_id
         selection.save()
 

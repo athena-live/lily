@@ -83,6 +83,49 @@
       form {
         margin: 0;
       }
+
+      .section {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid var(--mist);
+      }
+
+      .section-title {
+        font-size: 1rem;
+        margin: 0 0 12px;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .plan-list {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .plan-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--mist);
+        cursor: pointer;
+      }
+
+      .plan-option input {
+        margin: 0;
+      }
+
+      .plan-name {
+        font-weight: 600;
+      }
+
+      .plan-note {
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+      }
     </style>
   </head>
   <body>
@@ -98,6 +141,40 @@
         <span>Member since</span>
         <strong>{{ request.user.date_joined|date:"M d, Y" }}</strong>
       </div>
+      <div class="row">
+        <span>Service</span>
+        <strong>{{ current_plan_name }}</strong>
+      </div>
+
+      {% if service_plans %}
+        <div class="section">
+          <div class="section-title">Change service</div>
+          <div class="plan-note">Select a different plan to upgrade or downgrade.</div>
+          <form method="post" action="{% url 'home:subscription' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'home:profile' %}" />
+            <div class="plan-list">
+              {% for plan in service_plans %}
+                <label class="plan-option">
+                  <input
+                    type="radio"
+                    name="price_id"
+                    value="{{ plan.price_id }}"
+                    {% if plan.price_id == current_price_id %}checked{% endif %} />
+                  <span class="plan-name">{{ plan.name }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            <button class="btn" type="submit">Update service</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="section">
+          <div class="section-title">Service</div>
+          <div class="plan-note">Add your Stripe price IDs in settings to enable plan changes.</div>
+          <a class="link" href="{% url 'home:subscription' %}">Choose a service</a>
+        </div>
+      {% endif %}
 
       <div class="row">
         <a class="link" href="/">Back to home</a>
