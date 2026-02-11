@@ -125,6 +125,7 @@
       .plan-note {
         color: var(--ink-muted);
         font-size: 0.9rem;
+        margin-top: 10px;
       }
     </style>
   </head>
@@ -147,14 +148,16 @@
       </div>
       {% if not has_active_subscription %}
         <div class="section">
-          <div class="plan-note">No active subscription yet. Complete checkout to unlock your service.</div>
+          <div class="plan-note">
+            No active subscription yet. Complete checkout to unlock your service.
+          </div>
           <a class="btn" href="{% url 'home:subscription' %}">Subscribe now</a>
         </div>
       {% endif %}
 
       {% if service_plans %}
         <div class="section">
-          <div class="section-title">Change service</div>
+          <div class="section-title">Change plan</div>
           <div class="plan-note">
             Select a different plan to upgrade or downgrade. Updates sync automatically after Stripe
             authorizes the change.
