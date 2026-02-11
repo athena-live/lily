@@ -1,26 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Confirm your email for Lily</title>
+    <title>Confirm your email — Lily</title>
   </head>
-  <body style="margin:0; background-color:#f4f1e9; font-family:'Space Grotesk', Arial, sans-serif; color:#0f1a1c;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px;">
+  <body style="margin: 0; padding: 0; background: #f4f1e9; color: #0f1a1c;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f4f1e9; padding: 40px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; border:1px solid rgba(15,26,28,0.12);">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e5ded1;">
             <tr>
-              <td style="padding:28px 28px 12px 28px;">
-                <div style="font-size:14px; letter-spacing:0.08em; text-transform:uppercase; color:#41565b;">Lily</div>
-                <h1 style="margin:10px 0 12px 0; font-size:24px;">Confirm your email</h1>
-                <p style="margin:0 0 18px 0; line-height:1.6; color:#41565b;">Hi {{ user_display }}, thanks for joining Lily. Confirm your email to finish setting up your account.</p>
-                <p style="margin:0 0 22px 0;">
-                  <a href="{{ activate_url }}" style="display:inline-block; padding:12px 20px; background:#d96c2c; color:#fff8f2; text-decoration:none; border-radius:999px; font-weight:600;">Confirm email</a>
+              <td style="padding: 28px 28px 10px;">
+                <div style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em; color: #a44b1e;">
+                  Lily
+                </div>
+                <h1 style="margin: 12px 0 10px; font-family: 'Fraunces', Georgia, serif; font-size: 28px; line-height: 1.2;">
+                  Confirm your email
+                </h1>
+                <p style="margin: 0 0 18px; font-family: 'Space Grotesk', Arial, sans-serif; font-size: 16px; color: #41565b;">
+                  Tap the button below to verify your email and finish setting up your account.
                 </p>
-                <p style="margin:0 0 8px 0; font-size:14px; color:#41565b;">If the button doesn't work, copy and paste this link into your browser:</p>
-                <p style="margin:0 0 18px 0; font-size:14px; color:#0f1a1c; word-break:break-all;">{{ activate_url }}</p>
-                <p style="margin:0; font-size:13px; color:#41565b;">If you did not create a Lily account, you can ignore this email.</p>
+                <div style="margin: 24px 0 8px;">
+                  <a href="{{ activate_url }}" style="display: inline-block; background: #d96c2c; color: #fff8f2; text-decoration: none; padding: 12px 22px; border-radius: 999px; font-weight: 600; font-family: 'Space Grotesk', Arial, sans-serif;">
+                    Confirm email
+                  </a>
+                </div>
+                <p style="margin: 16px 0 0; font-family: 'Space Grotesk', Arial, sans-serif; font-size: 14px; color: #41565b;">
+                  If you did not create this account, you can safely ignore this message.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 16px 28px 28px; font-family: 'Space Grotesk', Arial, sans-serif; font-size: 13px; color: #6a7c80;">
+                Or copy and paste this link into your browser:<br />
+                <a href="{{ activate_url }}" style="color: #a44b1e; word-break: break-word;">{{ activate_url }}</a>
               </td>
             </tr>
           </table>
