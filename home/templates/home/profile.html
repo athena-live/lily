@@ -194,10 +194,21 @@
         <span>Service</span>
         <strong>{{ current_plan_name }}</strong>
       </div>
+      {% if plan_start_date %}
+        <div class="row">
+          <span>Plan started</span>
+          <strong>{{ plan_start_date|date:"M d, Y" }}</strong>
+        </div>
+      {% endif %}
       {% if has_active_subscription %}
         <div class="section">
           <div class="section-title">Plan actions</div>
           <div class="plan-note">View your plan or make changes.</div>
+          {% if cancel_at_period_end and cancel_at_date %}
+            <div class="plan-note">
+              Cancellation scheduled for {{ cancel_at_date|date:"M d, Y" }}.
+            </div>
+          {% endif %}
           <button class="btn btn-spaced" type="button" data-open-modal>View plan</button>
         </div>
       {% elif cancel_at_period_end and cancel_at_date %}

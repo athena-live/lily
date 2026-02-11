@@ -36,6 +36,7 @@ def profile(request):
         "has_active_subscription": _is_subscription_active(selection),
         "cancel_at_period_end": bool(selection and selection.stripe_cancel_at_period_end),
         "cancel_at_date": selection.stripe_cancel_at if selection else None,
+        "plan_start_date": selection.stripe_current_period_start if selection else None,
     }
     return render(request, "home/profile.html", context)
 
@@ -129,6 +130,9 @@ def cancel_subscription(request):
         subscription.get("cancel_at_period_end")
     )
     selection.stripe_cancel_at = _from_unix_timestamp(subscription.get("cancel_at"))
+    selection.stripe_current_period_start = _from_unix_timestamp(
+        subscription.get("current_period_start")
+    )
     selection.stripe_current_period_end = _from_unix_timestamp(
         subscription.get("current_period_end")
     )
@@ -292,6 +296,9 @@ def _upsert_selection_from_subscription(user, subscription):
         subscription.get("cancel_at_period_end")
     )
     selection.stripe_cancel_at = _from_unix_timestamp(subscription.get("cancel_at"))
+    selection.stripe_current_period_start = _from_unix_timestamp(
+        subscription.get("current_period_start")
+    )
     selection.stripe_current_period_end = _from_unix_timestamp(
         subscription.get("current_period_end")
     )
@@ -304,7 +311,7 @@ def _handle_invoice_event(invoice):
         return
 
     subscription_id = invoice.get("subscription")
-    price_id, product_id = _get_price_and_product_from_invoice(invoice)
+    price_id, product_id, period_start = _get_price_and_product_from_invoice(invoice)
     customer_id = invoice.get("customer", "") or ""
 
     selection, _ = SubscriptionSelection.objects.get_or_create(user=user)
@@ -314,6 +321,8 @@ def _handle_invoice_event(invoice):
         selection.stripe_price_id = price_id
     if product_id:
         selection.stripe_product_id = product_id
+    if period_start:
+        selection.stripe_current_period_start = period_start
     selection.save()
 
     if subscription_id:
@@ -334,12 +343,14 @@ def _get_user_from_invoice(invoice):
 def _get_price_and_product_from_invoice(invoice):
     lines = invoice.get("lines", {}).get("data", [])
     if not lines:
-        return "", ""
+        return "", "", None
     line = lines[0]
     price_details = line.get("pricing", {}).get("price_details", {})
     price_id = price_details.get("price", "") or ""
     product_id = price_details.get("product", "") or ""
-    return price_id, product_id
+    period = line.get("period", {})
+    period_start = _from_unix_timestamp(period.get("start"))
+    return price_id, product_id, period_start
 
 
 def _from_unix_timestamp(value):

@@ -13,6 +13,7 @@ class SubscriptionSelection(models.Model):
     stripe_status = models.CharField(max_length=50, blank=True)
     stripe_cancel_at_period_end = models.BooleanField(default=False)
     stripe_cancel_at = models.DateTimeField(null=True, blank=True)
+    stripe_current_period_start = models.DateTimeField(null=True, blank=True)
     stripe_current_period_end = models.DateTimeField(null=True, blank=True)
     selected_at = models.DateTimeField(auto_now_add=True)
 
