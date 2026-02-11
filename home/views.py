@@ -135,10 +135,14 @@ def _handle_checkout_session(session):
     subscription = stripe.Subscription.retrieve(
         subscription_id, expand=["items.data.price.product"]
     )
+    selection, _ = SubscriptionSelection.objects.get_or_create(user=user)
+    selection.stripe_customer_id = session.get("customer", "") or ""
+    selection.save()
     _upsert_selection_from_subscription(user, subscription)
 
 
 def _handle_subscription_event(subscription):
+    customer_id = subscription.get("customer")
     subscription_id = subscription.get("id")
     if subscription_id:
         subscription = stripe.Subscription.retrieve(
@@ -150,6 +154,11 @@ def _handle_subscription_event(subscription):
     if selection:
         _upsert_selection_from_subscription(selection.user, subscription)
         return
+    if customer_id:
+        selection = SubscriptionSelection.objects.filter(stripe_customer_id=customer_id).first()
+        if selection:
+            _upsert_selection_from_subscription(selection.user, subscription)
+            return
 
     user = _get_user_from_subscription(subscription)
     if not user:
@@ -226,6 +235,7 @@ def _upsert_selection_from_subscription(user, subscription):
         product_id = product or ""
 
     selection, _ = SubscriptionSelection.objects.get_or_create(user=user)
+    selection.stripe_customer_id = subscription.get("customer", "") or ""
     selection.stripe_subscription_id = subscription.get("id", "") or ""
     selection.stripe_price_id = price_id or ""
     selection.stripe_product_id = product_id or ""
@@ -233,13 +243,47 @@ def _upsert_selection_from_subscription(user, subscription):
 
 
 def _handle_invoice_event(invoice):
-    subscription_id = invoice.get("subscription")
-    if not subscription_id:
+    user = _get_user_from_invoice(invoice)
+    if not user:
         return
-    subscription = stripe.Subscription.retrieve(
-        subscription_id, expand=["items.data.price.product"]
-    )
-    _handle_subscription_event(subscription)
+
+    subscription_id = invoice.get("subscription")
+    price_id, product_id = _get_price_and_product_from_invoice(invoice)
+    customer_id = invoice.get("customer", "") or ""
+
+    selection, _ = SubscriptionSelection.objects.get_or_create(user=user)
+    selection.stripe_customer_id = customer_id
+    selection.stripe_subscription_id = subscription_id or ""
+    if price_id:
+        selection.stripe_price_id = price_id
+    if product_id:
+        selection.stripe_product_id = product_id
+    selection.save()
+
+    if subscription_id:
+        subscription = stripe.Subscription.retrieve(
+            subscription_id, expand=["items.data.price.product"]
+        )
+        _upsert_selection_from_subscription(user, subscription)
+
+
+def _get_user_from_invoice(invoice):
+    customer_email = invoice.get("customer_email")
+    if not customer_email:
+        customer_id = invoice.get("customer")
+        customer_email = _get_customer_email(customer_id)
+    return _resolve_user(None, customer_email)
+
+
+def _get_price_and_product_from_invoice(invoice):
+    lines = invoice.get("lines", {}).get("data", [])
+    if not lines:
+        return "", ""
+    line = lines[0]
+    price_details = line.get("pricing", {}).get("price_details", {})
+    price_id = price_details.get("price", "") or ""
+    product_id = price_details.get("product", "") or ""
+    return price_id, product_id
 
 
 def root_domain(request):

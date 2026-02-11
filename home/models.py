@@ -9,6 +9,7 @@ class SubscriptionSelection(models.Model):
     stripe_product_id = models.CharField(max_length=200, blank=True)
     stripe_price_id = models.CharField(max_length=200, blank=True)
     stripe_subscription_id = models.CharField(max_length=200, blank=True)
+    stripe_customer_id = models.CharField(max_length=200, blank=True)
     selected_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
