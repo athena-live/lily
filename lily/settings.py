@@ -160,6 +160,9 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Skip email verification for social logins (keep mandatory for email/password).
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

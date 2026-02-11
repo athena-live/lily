@@ -15,7 +15,19 @@ def root_domain(request):
     if len(parts) < 2:
         target_host = host
     else:
-        target_host = ".".join(parts[-2:])
+        second_level_tlds = {
+            "ac",
+            "co",
+            "com",
+            "edu",
+            "gov",
+            "net",
+            "org",
+        }
+        if len(parts) >= 3 and len(parts[-1]) == 2 and parts[-2] in second_level_tlds:
+            target_host = ".".join(parts[-3:])
+        else:
+            target_host = ".".join(parts[-2:])
 
     target_url = f"{request.scheme}://{target_host}"
     if not url_has_allowed_host_and_scheme(target_url, allowed_hosts={target_host}):
