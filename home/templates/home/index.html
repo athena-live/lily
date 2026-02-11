@@ -236,6 +236,7 @@
           </div>
         </div>
         <nav class="nav">
+          <a href="/" id="home-link">Home</a>
           <a href="#signal">Signal</a>
           <a href="#insights">Insights</a>
           <a href="#workflow">Workflow</a>
@@ -304,5 +305,23 @@
         <span>Need API access? Reach out.</span>
       </div>
     </div>
+    <script>
+      (function () {
+        var homeLink = document.getElementById("home-link");
+        if (!homeLink || !window.location || !window.location.hostname) {
+          return;
+        }
+
+        var host = window.location.hostname;
+        var parts = host.split(".");
+        if (parts.length < 2) {
+          homeLink.href = window.location.origin;
+          return;
+        }
+
+        var topLevel = parts.slice(-2).join(".");
+        homeLink.href = window.location.protocol + "//" + topLevel;
+      })();
+    </script>
   </body>
 </html>
