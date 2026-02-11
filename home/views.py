@@ -23,9 +23,6 @@ def subscription(request):
     if request.method == "POST":
         if selection is None:
             selection = SubscriptionSelection(user=request.user)
-        selection.stripe_product_id = (
-            settings.STRIPE_PRODUCT_ID or selection.stripe_product_id
-        )
         posted_price_id = request.POST.get("price_id", "").strip()
         if posted_price_id:
             selection.stripe_price_id = posted_price_id
