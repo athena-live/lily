@@ -1,0 +1,18 @@
+{% extends "account/base.html" %}
+
+{% block title %}Verify your email — Lily{% endblock %}
+
+{% block content %}
+  <h2>Verify your email</h2>
+  <p>
+    We just sent a verification link to your inbox. Click the link to finish creating your
+    account. If you do not see it, check your spam folder.
+  </p>
+  <div class="links">
+    <a class="btn btn-primary" href="{% url 'account_email' %}">Resend email</a>
+    <a class="btn btn-secondary" href="{% url 'account_login' %}">Back to sign in</a>
+  </div>
+  <p class="muted" style="margin-top: 14px;">
+    Need help? Email us and we will get you sorted.
+  </p>
+{% endblock %}
