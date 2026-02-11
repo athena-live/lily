@@ -4,3 +4,4 @@ gunicorn
 python-dotenv
 django-allauth
 django-sendgrid-v5
+requests
