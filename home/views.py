@@ -45,6 +45,16 @@ def profile(request):
         "plan_start_date": selection.stripe_current_period_start if selection else None,
         "username": request.user.username,
         "subscription_status": selection.stripe_status if selection else "",
+        "canceled_or_ended": bool(
+            selection
+            and (
+                selection.stripe_status == "canceled"
+                or (
+                    _effective_cancel_date(selection)
+                    and _effective_cancel_date(selection) <= timezone.now()
+                )
+            )
+        ),
     }
     return render(request, "home/profile.html", context)
 
