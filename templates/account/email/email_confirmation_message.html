@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Confirm your email for Lily</title>
+  </head>
+  <body style="margin:0; background-color:#f4f1e9; font-family:'Space Grotesk', Arial, sans-serif; color:#0f1a1c;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; border:1px solid rgba(15,26,28,0.12);">
+            <tr>
+              <td style="padding:28px 28px 12px 28px;">
+                <div style="font-size:14px; letter-spacing:0.08em; text-transform:uppercase; color:#41565b;">Lily</div>
+                <h1 style="margin:10px 0 12px 0; font-size:24px;">Confirm your email</h1>
+                <p style="margin:0 0 18px 0; line-height:1.6; color:#41565b;">Hi {{ user_display }}, thanks for joining Lily. Confirm your email to finish setting up your account.</p>
+                <p style="margin:0 0 22px 0;">
+                  <a href="{{ activate_url }}" style="display:inline-block; padding:12px 20px; background:#d96c2c; color:#fff8f2; text-decoration:none; border-radius:999px; font-weight:600;">Confirm email</a>
+                </p>
+                <p style="margin:0 0 8px 0; font-size:14px; color:#41565b;">If the button doesn't work, copy and paste this link into your browser:</p>
+                <p style="margin:0 0 18px 0; font-size:14px; color:#0f1a1c; word-break:break-all;">{{ activate_url }}</p>
+                <p style="margin:0; font-size:13px; color:#41565b;">If you did not create a Lily account, you can ignore this email.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

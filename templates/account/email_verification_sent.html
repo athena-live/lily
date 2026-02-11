@@ -1,0 +1,13 @@
+{% extends "account/base.html" %}
+
+{% block title %}Check your inbox — Lily{% endblock %}
+
+{% block content %}
+  <h2>Check your inbox</h2>
+  <p>We just sent a confirmation link to your email. Follow it to activate your account.</p>
+  <p class="muted">If it doesn't arrive within a few minutes, check your spam folder.</p>
+  <div class="links">
+    <a href="{% url 'account_login' %}">Back to sign in</a>
+    <a href="{% url 'account_email' %}">Resend confirmation email</a>
+  </div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "account/base.html" %}
+
+{% block title %}Confirm your email — Lily{% endblock %}
+
+{% block content %}
+  <h2>Confirm your email</h2>
+  {% if confirmation %}
+    <p>You're confirming <strong>{{ confirmation.email_address.email }}</strong>.</p>
+    <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+      {% csrf_token %}
+      <button class="btn btn-primary" type="submit">Confirm email</button>
+    </form>
+    <p class="muted" style="margin-top:12px;">This helps us keep your account secure.</p>
+  {% else %}
+    <p>That confirmation link is invalid or has expired.</p>
+    <div class="links">
+      <a href="{% url 'account_email' %}">Resend confirmation email</a>
+      <a href="{% url 'account_login' %}">Back to sign in</a>
+    </div>
+  {% endif %}
+{% endblock %}
