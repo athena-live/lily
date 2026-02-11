@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.conf import settings
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 
+from .models import SubscriptionSelection
 # Create your views here.
 
 
@@ -13,6 +15,35 @@ def index(request):
 @login_required
 def profile(request):
     return render(request, "home/profile.html")
+
+
+@login_required
+def subscription(request):
+    selection = SubscriptionSelection.objects.filter(user=request.user).first()
+    if request.method == "POST":
+        if selection is None:
+            selection = SubscriptionSelection(user=request.user)
+        selection.stripe_product_id = (
+            settings.STRIPE_PRODUCT_ID or selection.stripe_product_id
+        )
+        posted_price_id = request.POST.get("price_id", "").strip()
+        if posted_price_id:
+            selection.stripe_price_id = posted_price_id
+        selection.save()
+
+        next_url = request.POST.get("next", "").strip()
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}
+        ):
+            return redirect(next_url)
+        return redirect("home:profile")
+
+    context = {
+        "stripe_pricing_table_id": settings.STRIPE_PRICING_TABLE_ID,
+        "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+        "subscription_selected": selection is not None,
+    }
+    return render(request, "home/subscription.html", context)
 
 
 def root_domain(request):

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choose your plan — Lily</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+      :root {
+        --ink: #0f1a1c;
+        --ink-muted: #41565b;
+        --paper: #f4f1e9;
+        --accent: #d96c2c;
+        --mist: rgba(15, 26, 28, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+        min-height: 100vh;
+        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
+          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
+          var(--paper);
+        display: grid;
+        place-items: center;
+        padding: 40px 20px;
+      }
+
+      .card {
+        width: min(980px, 100%);
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 24px;
+        border: 1px solid var(--mist);
+        box-shadow: 0 20px 45px rgba(15, 26, 28, 0.12);
+        padding: 28px;
+      }
+
+      h1 {
+        font-family: "Fraunces", serif;
+        margin: 0 0 12px;
+      }
+
+      .meta {
+        color: var(--ink-muted);
+        margin-bottom: 18px;
+        line-height: 1.5;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .btn {
+        border: none;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-weight: 600;
+        background: var(--accent);
+        color: #fff8f2;
+        cursor: pointer;
+        text-decoration: none;
+      }
+
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--mist);
+        color: var(--ink);
+      }
+
+      .status {
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(217, 108, 44, 0.12);
+        color: #7a2f13;
+        font-size: 0.95rem;
+        margin-top: 12px;
+      }
+    </style>
+    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Choose your plan</h1>
+      <p class="meta">
+        Select a subscription to continue. Once you complete checkout, come back here and
+        confirm below so we can unlock your workspace.
+      </p>
+
+      {% if subscription_selected %}
+        <div class="status">You already have a subscription on file.</div>
+      {% endif %}
+
+      <stripe-pricing-table
+        pricing-table-id="{{ stripe_pricing_table_id }}"
+        publishable-key="{{ stripe_publishable_key }}">
+      </stripe-pricing-table>
+
+      <form method="post" class="actions">
+        {% csrf_token %}
+        <button class="btn" type="submit">I completed checkout</button>
+        <a class="btn btn-secondary" href="/">Back to home</a>
+      </form>
+    </div>
+  </body>
+</html>
