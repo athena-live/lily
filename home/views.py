@@ -321,6 +321,14 @@ def _upsert_selection_from_subscription(user, subscription):
 def _handle_invoice_event(invoice):
     user = _get_user_from_invoice(invoice)
     if not user:
+        customer_id = invoice.get("customer")
+        if customer_id:
+            selection = SubscriptionSelection.objects.filter(
+                stripe_customer_id=customer_id
+            ).first()
+            if selection:
+                user = selection.user
+    if not user:
         return
 
     subscription_id = invoice.get("subscription")
@@ -354,13 +362,25 @@ def _get_user_from_invoice(invoice):
 
 
 def _get_price_and_product_from_invoice(invoice):
-    lines = invoice.get("lines", {}).get("data", [])
+    lines = (invoice.get("lines") or {}).get("data") or []
     if not lines:
         return "", "", None
     line = lines[0]
-    price_details = line.get("pricing", {}).get("price_details", {})
+    pricing = line.get("pricing") or {}
+    price_details = pricing.get("price_details") or {}
     price_id = price_details.get("price", "") or ""
     product_id = price_details.get("product", "") or ""
+    if not price_id:
+        price_obj = line.get("price") or line.get("plan") or {}
+        if isinstance(price_obj, dict):
+            price_id = price_obj.get("id", "") or ""
+            product_id = product_id or price_obj.get("product", "") or ""
+    if not product_id:
+        product_obj = line.get("product")
+        if isinstance(product_obj, dict):
+            product_id = product_obj.get("id", "") or ""
+        elif isinstance(product_obj, str):
+            product_id = product_obj
     period = line.get("period", {})
     period_start = _from_unix_timestamp(period.get("start"))
     return price_id, product_id, period_start
