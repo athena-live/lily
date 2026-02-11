@@ -207,6 +207,7 @@
           {% if cancel_at_period_end and cancel_at_date %}
             <div class="plan-note">
               Cancellation scheduled for {{ cancel_at_date|date:"M d, Y" }}.
+              {% if cancel_in_future %}Effective on that date.{% endif %}
             </div>
           {% endif %}
           <button class="btn btn-spaced" type="button" data-open-modal>View plan</button>
@@ -216,6 +217,7 @@
           <div class="section-title">Plan status</div>
           <div class="plan-note">
             Your plan is set to cancel on {{ cancel_at_date|date:"M d, Y" }}.
+            {% if cancel_in_future %}It will remain active until then.{% endif %}
           </div>
         </div>
       {% else %}

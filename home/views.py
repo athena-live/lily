@@ -36,6 +36,11 @@ def profile(request):
         "has_active_subscription": _is_subscription_active(selection),
         "cancel_at_period_end": bool(selection and selection.stripe_cancel_at_period_end),
         "cancel_at_date": selection.stripe_cancel_at if selection else None,
+        "cancel_in_future": bool(
+            selection
+            and selection.stripe_cancel_at
+            and selection.stripe_cancel_at > timezone.now()
+        ),
         "plan_start_date": selection.stripe_current_period_start if selection else None,
     }
     return render(request, "home/profile.html", context)
