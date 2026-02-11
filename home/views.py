@@ -104,6 +104,26 @@ def change_subscription(request):
     return redirect("home:profile")
 
 
+@login_required
+def cancel_subscription(request):
+    if request.method != "POST":
+        return redirect("home:profile")
+
+    selection = SubscriptionSelection.objects.filter(user=request.user).first()
+    if not selection or not selection.stripe_subscription_id:
+        return redirect("home:profile")
+
+    if not settings.STRIPE_SECRET_KEY:
+        return redirect("home:profile")
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    stripe.Subscription.modify(
+        selection.stripe_subscription_id,
+        cancel_at_period_end=True,
+    )
+    return redirect("home:profile")
+
+
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body

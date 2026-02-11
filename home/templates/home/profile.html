@@ -90,6 +90,12 @@
         border-top: 1px solid var(--mist);
       }
 
+      .btn-spaced {
+        margin-top: 18px;
+        display: inline-flex;
+        align-items: center;
+      }
+
       .section-title {
         font-size: 1rem;
         margin: 0 0 12px;
@@ -127,6 +133,48 @@
         font-size: 0.9rem;
         margin-top: 10px;
       }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 26, 28, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal {
+        width: min(420px, 100%);
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 20px 50px rgba(15, 26, 28, 0.2);
+        border: 1px solid var(--mist);
+      }
+
+      .modal h2 {
+        margin: 0 0 8px;
+        font-family: "Fraunces", serif;
+        font-size: 1.4rem;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--mist);
+      }
+
+      .modal-open {
+        overflow: hidden;
+      }
     </style>
   </head>
   <body>
@@ -146,17 +194,23 @@
         <span>Service</span>
         <strong>{{ current_plan_name }}</strong>
       </div>
-      {% if not has_active_subscription %}
+      {% if has_active_subscription %}
+        <div class="section">
+          <div class="section-title">Plan actions</div>
+          <div class="plan-note">View your plan or make changes.</div>
+          <button class="btn btn-spaced" type="button" data-open-modal>View plan</button>
+        </div>
+      {% else %}
         <div class="section">
           <div class="plan-note">
             No active subscription yet. Complete checkout to unlock your service.
           </div>
-          <a class="btn" href="{% url 'home:subscription' %}">Subscribe now</a>
+          <a class="btn btn-spaced" href="{% url 'home:subscription' %}">Subscribe now</a>
         </div>
       {% endif %}
 
       {% if service_plans %}
-        <div class="section">
+        <div class="section" id="change-plan">
           <div class="section-title">Change plan</div>
           <div class="plan-note">
             Select a different plan to upgrade or downgrade. Updates sync automatically after Stripe
@@ -195,5 +249,51 @@
         </form>
       </div>
     </div>
+
+    {% if has_active_subscription %}
+      <div class="modal-backdrop" data-modal>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="planModalTitle">
+          <h2 id="planModalTitle">Manage your plan</h2>
+          <div class="plan-note">Choose how you want to update your subscription.</div>
+          <div class="modal-actions">
+            <a class="btn" href="#change-plan" data-close-modal>Change plan</a>
+            <form method="post" action="{% url 'home:cancel_subscription' %}">
+              {% csrf_token %}
+              <button class="btn btn-ghost" type="submit">Cancel plan</button>
+            </form>
+            <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <script>
+      const openButtons = document.querySelectorAll("[data-open-modal]");
+      const closeButtons = document.querySelectorAll("[data-close-modal]");
+      const modal = document.querySelector("[data-modal]");
+
+      const openModal = () => {
+        if (!modal) return;
+        modal.style.display = "flex";
+        document.body.classList.add("modal-open");
+      };
+
+      const closeModal = () => {
+        if (!modal) return;
+        modal.style.display = "none";
+        document.body.classList.remove("modal-open");
+      };
+
+      openButtons.forEach((button) => button.addEventListener("click", openModal));
+      closeButtons.forEach((button) => button.addEventListener("click", closeModal));
+
+      if (modal) {
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) {
+            closeModal();
+          }
+        });
+      }
+    </script>
   </body>
 </html>
