@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -82,6 +83,30 @@
         gap: 36px;
         margin-top: 56px;
         align-items: center;
+      }
+
+      .hero-visual {
+        width: min(420px, 100%);
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto 20px;
+        display: block;
+        border-radius: 24px;
+        border: 1px solid var(--mist);
+        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.12);
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        color: var(--ink-muted);
+        background: #fff;
+        border: 1px solid var(--mist);
+        padding: 6px 14px;
+        border-radius: 999px;
+        margin-bottom: 16px;
       }
 
       .hero h1 {
@@ -220,6 +245,15 @@
         .nav {
           flex-wrap: wrap;
         }
+
+        .hero {
+          gap: 24px;
+        }
+
+        .hero-visual {
+          width: 100%;
+          margin: 0 0 16px;
+        }
       }
     </style>
   </head>
@@ -245,6 +279,7 @@
 
       <section class="hero">
         <div>
+          <div class="hero-tag">Flow: slop.fit.flow</div>
           <h1>Spot the slop. Keep the intelligence.</h1>
           <p>
             Lily helps teams identify low-quality AI output before it ships. Score content,
@@ -255,7 +290,13 @@
             <a class="btn btn-secondary" href="{% url 'account_signup' %}">Create account</a>
           </div>
         </div>
-        <div class="panel signal" id="signal">
+        <div>
+          <img
+            class="hero-visual"
+            src="{% static 'images/slop.fit.flow.png' %}"
+            alt="Slop fit flow"
+          />
+          <div class="panel signal" id="signal">
           <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--ink-muted);">
             <span>Signal clarity</span>
             <span>82%</span>
@@ -277,6 +318,7 @@
               <span>Evidence</span>
               <strong>Needs work</strong>
             </div>
+          </div>
           </div>
         </div>
       </section>
