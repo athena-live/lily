@@ -85,6 +85,10 @@
         align-items: center;
       }
 
+      .hero-copy {
+        position: relative;
+      }
+
       .hero-visual {
         width: min(420px, 100%);
         max-width: 100%;
@@ -92,8 +96,9 @@
         margin: 0 auto 20px;
         display: block;
         border-radius: 24px;
-        border: 1px solid var(--mist);
-        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.12);
+        border: 1px solid rgba(217, 108, 44, 0.25);
+        box-shadow: 0 24px 50px rgba(15, 26, 28, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
       }
 
       .hero-tag {
@@ -102,11 +107,17 @@
         gap: 8px;
         font-size: 0.95rem;
         color: var(--ink-muted);
-        background: #fff;
-        border: 1px solid var(--mist);
+        background: linear-gradient(135deg, #fff, #fef3e9);
+        border: 1px solid rgba(217, 108, 44, 0.25);
         padding: 6px 14px;
         border-radius: 999px;
         margin-bottom: 16px;
+        box-shadow: 0 12px 24px rgba(217, 108, 44, 0.12);
+      }
+
+      .hero-tag strong {
+        color: var(--accent-dark);
+        font-weight: 600;
       }
 
       .hero h1 {
@@ -163,6 +174,19 @@
         padding: 26px;
         box-shadow: 0 20px 40px rgba(15, 26, 28, 0.08);
         backdrop-filter: blur(6px);
+      }
+
+      .signal {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
+      }
+
+      .hero-surface {
+        position: relative;
+        padding: 12px;
+        border-radius: 28px;
+        background: linear-gradient(160deg, rgba(255, 241, 229, 0.7), rgba(232, 242, 239, 0.7));
+        border: 1px solid rgba(15, 26, 28, 0.06);
+        box-shadow: 0 16px 30px rgba(15, 26, 28, 0.08);
       }
 
       .signal {
@@ -278,8 +302,8 @@
       </header>
 
       <section class="hero">
-        <div>
-          <div class="hero-tag">Flow: slop.fit.flow</div>
+        <div class="hero-copy">
+          <div class="hero-tag">Flow: <strong>slop.fit.flow</strong></div>
           <h1>Spot the slop. Keep the intelligence.</h1>
           <p>
             Lily helps teams identify low-quality AI output before it ships. Score content,
@@ -290,7 +314,7 @@
             <a class="btn btn-secondary" href="{% url 'account_signup' %}">Create account</a>
           </div>
         </div>
-        <div>
+        <div class="hero-surface">
           <img
             class="hero-visual"
             src="{% static 'images/slop.fit.flow.png' %}"
