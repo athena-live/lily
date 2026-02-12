@@ -19,3 +19,21 @@ class SubscriptionSelection(models.Model):
 
     def __str__(self):
         return f"SubscriptionSelection(user_id={self.user_id})"
+
+
+class UserThemePreference(models.Model):
+    THEME_LIGHT = "light"
+    THEME_DARK = "dark"
+    THEME_CHOICES = [
+        (THEME_LIGHT, "Light"),
+        (THEME_DARK, "Dark"),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="theme_preference"
+    )
+    theme = models.CharField(max_length=10, choices=THEME_CHOICES, default=THEME_LIGHT)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"UserThemePreference(user_id={self.user_id}, theme={self.theme})"

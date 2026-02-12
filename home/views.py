@@ -6,16 +6,22 @@ from django.utils import timezone
 from datetime import timezone as dt_timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 
 import stripe
+import json
 
-from .models import SubscriptionSelection
+from .models import SubscriptionSelection, UserThemePreference
 # Create your views here.
 
 
+@ensure_csrf_cookie
 def index(request):
-    return render(request, "home/index.html")
+    context = {
+        "theme": _get_user_theme(request.user),
+    }
+    return render(request, "home/index.html", context)
 
 
 @login_required
@@ -55,8 +61,36 @@ def profile(request):
                 )
             )
         ),
+        "theme": _get_user_theme(request.user),
     }
     return render(request, "home/profile.html", context)
+
+
+def _get_user_theme(user):
+    if not getattr(user, "is_authenticated", False):
+        return ""
+    preference = UserThemePreference.objects.filter(user=user).first()
+    return preference.theme if preference else UserThemePreference.THEME_LIGHT
+
+
+@login_required
+@require_POST
+def set_theme(request):
+    theme = (request.POST.get("theme") or "").strip().lower()
+    if not theme and request.body:
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            payload = {}
+        theme = str(payload.get("theme", "")).strip().lower()
+
+    if theme not in {UserThemePreference.THEME_LIGHT, UserThemePreference.THEME_DARK}:
+        return JsonResponse({"ok": False, "error": "invalid_theme"}, status=400)
+
+    preference, _ = UserThemePreference.objects.get_or_create(user=request.user)
+    preference.theme = theme
+    preference.save(update_fields=["theme", "updated_at"])
+    return JsonResponse({"ok": True, "theme": preference.theme})
 
 
 def _get_stripe_service_name(price_id):

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"{% if theme %} data-theme="{{ theme }}"{% endif %}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -175,9 +175,45 @@
       .modal-open {
         overflow: hidden;
       }
+
+      .theme-toggle {
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      html[data-theme="dark"] {
+        --ink: #f4f3ee;
+        --ink-muted: #b7c0c2;
+        --paper: #0b1112;
+        --accent: #f0a56d;
+        --mist: rgba(244, 243, 238, 0.14);
+      }
+
+      html[data-theme="dark"] body {
+        background: radial-gradient(800px 400px at 20% 10%, rgba(35, 42, 41, 0.65) 0%, transparent 70%),
+          radial-gradient(800px 500px at 90% 0%, rgba(24, 34, 34, 0.7) 0%, transparent 70%),
+          var(--paper);
+      }
+
+      html[data-theme="dark"] .card {
+        background: rgba(14, 18, 19, 0.9);
+        border-color: rgba(244, 243, 238, 0.08);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+      }
+
+      html[data-theme="dark"] .modal {
+        background: rgba(16, 20, 21, 0.98);
+        border-color: rgba(244, 243, 238, 0.08);
+      }
+
+      html[data-theme="dark"] .btn-ghost {
+        border-color: rgba(244, 243, 238, 0.2);
+      }
     </style>
   </head>
-  <body>
+  <body data-auth="{{ request.user.is_authenticated|yesno:'1,0' }}" data-theme-endpoint="{% url 'home:set_theme' %}">
     <div class="card">
       <h1>Your profile</h1>
       <div class="meta">
@@ -196,6 +232,12 @@
       <div class="row">
         <span>Service</span>
         <strong>{{ current_plan_name }}</strong>
+      </div>
+      <div class="row">
+        <span>Theme</span>
+        <button class="btn btn-ghost theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+          <span data-theme-label>Light mode</span>
+        </button>
       </div>
       {% if plan_start_date %}
         <div class="row">
@@ -307,6 +349,12 @@
       const modal = document.querySelector("[data-modal]");
       const planLink = document.querySelector("[data-open-plans]");
       const planSection = document.getElementById("change-plan-form");
+      const themeToggle = document.querySelector("[data-theme-toggle]");
+      const themeLabel = document.querySelector("[data-theme-label]");
+      const root = document.documentElement;
+      const body = document.body;
+      const isAuthed = body.dataset.auth === "1";
+      const themeEndpoint = body.dataset.themeEndpoint;
 
       const openModal = () => {
         if (!modal) return;
@@ -334,6 +382,48 @@
           if (event.target === modal) {
             closeModal();
           }
+        });
+      }
+
+      const getCookie = (name) => {
+        const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+        return match ? decodeURIComponent(match[2]) : "";
+      };
+
+      const setTheme = (theme, { persist } = { persist: false }) => {
+        root.setAttribute("data-theme", theme);
+        if (themeLabel) {
+          themeLabel.textContent = theme === "dark" ? "Dark mode" : "Light mode";
+        }
+        if (themeToggle) {
+          themeToggle.setAttribute("aria-pressed", theme === "dark");
+        }
+        if (persist) {
+          localStorage.setItem("theme", theme);
+          if (isAuthed && themeEndpoint) {
+            fetch(themeEndpoint, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+              },
+              body: JSON.stringify({ theme }),
+            }).catch(() => {});
+          }
+        }
+      };
+
+      const storedTheme = localStorage.getItem("theme");
+      const serverTheme = root.getAttribute("data-theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initialTheme = serverTheme || storedTheme || (prefersDark ? "dark" : "light");
+
+      setTheme(initialTheme, { persist: false });
+
+      if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+          const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          setTheme(nextTheme, { persist: true });
         });
       }
     </script>
