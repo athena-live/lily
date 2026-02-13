@@ -291,6 +291,10 @@
       {% endif %}
 
       <div class="row">
+        <span>Content ingestion</span>
+        <a class="btn" href="{% url 'content_ingestion:ingest' %}">Open</a>
+      </div>
+      <div class="row">
         <a class="link" href="/">Back to home</a>
         <form method="post" action="{% url 'account_logout' %}">
           {% csrf_token %}
