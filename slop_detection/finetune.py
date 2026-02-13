@@ -41,6 +41,31 @@ def build_training_jsonl(corrections):
     return "\n".join(lines) + ("\n" if lines else "")
 
 
+def build_report_training_jsonl(report_corrections):
+    lines = []
+    for correction in report_corrections:
+        report = correction.report
+        content = report.content.raw_text.strip() if report and report.content else ""
+        corrected = correction.corrected_report
+        if not content or not corrected:
+            continue
+        payload = {
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a strict slop analysis engine. Output only valid JSON diagnostics.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Analyze this content and return the slop report JSON:\n\n{content}",
+                },
+                {"role": "assistant", "content": json.dumps(corrected, ensure_ascii=True)},
+            ]
+        }
+        lines.append(json.dumps(payload, ensure_ascii=True))
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
 def upload_training_file(jsonl_text):
     api_key = _openai_key()
     base_url = _openai_base()

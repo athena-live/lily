@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lily — Slop Report Correction</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+      :root {
+        --ink: #0f1a1c;
+        --ink-muted: #41565b;
+        --paper: #f4f1e9;
+        --accent: #d96c2c;
+        --mist: rgba(15, 26, 28, 0.08);
+        --glow: rgba(217, 108, 44, 0.16);
+        --panel: rgba(255, 255, 255, 0.85);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
+          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
+          var(--paper);
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: linear-gradient(145deg, #ffe2c6, #d96c2c);
+        box-shadow: 0 10px 25px var(--glow);
+        display: grid;
+        place-items: center;
+        color: #5a210a;
+        font-weight: 700;
+      }
+
+      .nav a {
+        color: var(--ink-muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+        margin-left: 14px;
+      }
+
+      .title {
+        font-family: "Fraunces", serif;
+        font-size: clamp(2rem, 4vw, 2.6rem);
+        margin: 0 0 6px;
+      }
+
+      .subtitle {
+        color: var(--ink-muted);
+        margin: 0;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid rgba(217, 108, 44, 0.2);
+        border-radius: 20px;
+        padding: 18px 20px;
+        box-shadow: 0 18px 36px rgba(15, 26, 28, 0.12);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 280px;
+        border-radius: 14px;
+        border: 1px solid rgba(15, 26, 28, 0.1);
+        padding: 12px;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        font-size: 0.95rem;
+        resize: vertical;
+      }
+
+      .btn {
+        border: none;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-weight: 600;
+        background: var(--accent);
+        color: #fff8f2;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: 0 12px 25px var(--glow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--mist);
+        box-shadow: none;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 35px var(--glow);
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 0.9rem;
+      }
+
+      .history {
+        display: grid;
+        gap: 10px;
+      }
+
+      .history-item {
+        border-radius: 14px;
+        border: 1px solid rgba(15, 26, 28, 0.08);
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="brand">
+          <div class="brand-badge">L</div>
+          <div>Lily Admin</div>
+        </div>
+        <nav class="nav">
+          <a href="{% url 'slop_detection:admin_ingestions' %}">All ingestions</a>
+          <a href="{% url 'slop_detection:admin_training' %}">Training</a>
+          <a href="/profile/">Profile</a>
+        </nav>
+      </header>
+
+      <section>
+        <h1 class="title">Slop report correction</h1>
+        <p class="subtitle">
+          {{ report.content.name }} · Generated {{ report.created_at|date:"M d, Y H:i" }}
+        </p>
+      </section>
+
+      <div class="grid">
+        <div class="card">
+          <h2 class="subtitle">Original report JSON</h2>
+          {{ report.report|json_script:"original-report" }}
+          <pre id="original-output"></pre>
+        </div>
+        <div class="card">
+          <h2 class="subtitle">Current correction</h2>
+          {% if current_correction %}
+            {{ current_correction.corrected_report|json_script:"current-report" }}
+            <pre id="current-output"></pre>
+          {% else %}
+            <div class="subtitle">No correction yet.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="subtitle">New correction JSON</h2>
+        <form method="post">
+          {% csrf_token %}
+          {% if current_correction %}
+            {{ current_correction.corrected_report|json_script:"prefill-report" }}
+          {% endif %}
+          <textarea name="corrected_report" id="corrected-input" placeholder="Paste corrected JSON here..."></textarea>
+          <div style="height: 12px;"></div>
+          <textarea name="notes" placeholder="Notes for training or context (optional)"></textarea>
+          <div style="height: 12px;"></div>
+          <button class="btn" type="submit">Save correction</button>
+          <a class="btn btn-ghost" href="{% url 'slop_detection:report_detail' report.id %}">View report</a>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 class="subtitle">Correction history</h2>
+        <div class="history">
+          {% for correction in corrections %}
+            <div class="history-item">
+              <div class="subtitle">
+                {{ correction.created_at|date:"M d, Y H:i" }} ·
+                {% if correction.editor %}{{ correction.editor.email }}{% else %}System{% endif %}
+                {% if correction.is_current %} · Current{% endif %}
+              </div>
+              {% with history_id="history-report-"|add:correction.id|stringformat:"s" %}
+                {{ correction.corrected_report|json_script:history_id }}
+                <pre id="history-output-{{ correction.id }}"></pre>
+              {% endwith %}
+            </div>
+          {% empty %}
+            <div class="subtitle">No corrections yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <script>
+      const original = JSON.parse(document.getElementById("original-report").textContent);
+      document.getElementById("original-output").textContent = JSON.stringify(original, null, 2);
+      const currentNode = document.getElementById("current-report");
+      if (currentNode) {
+        const current = JSON.parse(currentNode.textContent);
+        document.getElementById("current-output").textContent = JSON.stringify(current, null, 2);
+      }
+      const prefillNode = document.getElementById("prefill-report");
+      if (prefillNode) {
+        const prefill = JSON.parse(prefillNode.textContent);
+        document.getElementById("corrected-input").value = JSON.stringify(prefill, null, 2);
+      }
+      const historyNodes = document.querySelectorAll("script[id^='history-report-']");
+      historyNodes.forEach((node) => {
+        const id = node.id.replace("history-report-", "");
+        const target = document.getElementById(`history-output-${id}`);
+        if (target) {
+          target.textContent = JSON.stringify(JSON.parse(node.textContent), null, 2);
+        }
+      });
+    </script>
+  </body>
+</html>

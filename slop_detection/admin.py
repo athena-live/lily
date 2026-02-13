@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ContentCorrection, FineTuneJob, SiteModelConfig, SlopReport
+from .models import ContentCorrection, FineTuneJob, SiteModelConfig, SlopReport, SlopReportCorrection
 
 
 @admin.register(SlopReport)
@@ -27,5 +27,12 @@ class FineTuneJobAdmin(admin.ModelAdmin):
 @admin.register(SiteModelConfig)
 class SiteModelConfigAdmin(admin.ModelAdmin):
     list_display = ("id", "current_model", "updated_by", "updated_at")
+
+
+@admin.register(SlopReportCorrection)
+class SlopReportCorrectionAdmin(admin.ModelAdmin):
+    list_display = ("id", "report", "editor", "is_current", "created_at")
+    search_fields = ("report__content__name", "editor__email")
+    list_filter = ("is_current", "created_at")
 
 # Register your models here.

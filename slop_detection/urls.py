@@ -11,6 +11,7 @@ urlpatterns = [
     path("latest/<int:content_id>/", views.latest_report, name="latest_report"),
     path("admin/ingestions/", views.admin_ingestions, name="admin_ingestions"),
     path("admin/ingestions/<int:content_id>/", views.admin_correction, name="admin_correction"),
+    path("admin/reports/<int:report_id>/", views.admin_report_correction, name="admin_report_correction"),
     path("admin/training/", views.admin_training, name="admin_training"),
     path("admin/model/", views.admin_set_model, name="admin_set_model"),
 ]

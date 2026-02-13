@@ -202,6 +202,20 @@
           </form>
         </div>
         <div class="card">
+          <h2 class="subtitle">Train slop report model</h2>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="train_report" />
+            <label class="subtitle">Base model</label>
+            <input type="text" name="base_model" value="{{ active_model }}" />
+            <div style="height: 12px;"></div>
+            <button class="btn" type="submit">Start report fine-tune</button>
+            <button class="btn btn-ghost" type="submit" name="action" value="export_report">
+              Export report JSONL
+            </button>
+          </form>
+        </div>
+        <div class="card">
           <h2 class="subtitle">Activate model</h2>
           <form method="post" action="{% url 'slop_detection:admin_set_model' %}">
             {% csrf_token %}

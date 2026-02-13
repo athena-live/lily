@@ -1,3 +1,4 @@
+import json
 import os
 
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -9,8 +10,14 @@ from django.views.decorators.http import require_http_methods
 from content_ingestion.models import IngestedContent
 
 from .engine import analyze_content
-from .finetune import build_training_jsonl, create_fine_tune_job, get_fine_tune_job, upload_training_file
-from .models import ContentCorrection, FineTuneJob, SiteModelConfig, SlopReport
+from .finetune import (
+    build_report_training_jsonl,
+    build_training_jsonl,
+    create_fine_tune_job,
+    get_fine_tune_job,
+    upload_training_file,
+)
+from .models import ContentCorrection, FineTuneJob, SiteModelConfig, SlopReport, SlopReportCorrection
 
 
 def _base_queryset(request):
@@ -122,6 +129,47 @@ def admin_correction(request, content_id):
 
 @user_passes_test(_is_admin)
 @require_http_methods(["GET", "POST"])
+def admin_report_correction(request, report_id):
+    report = SlopReport.objects.select_related("content", "user").filter(id=report_id).first()
+    if not report:
+        raise Http404("Report not found.")
+
+    if request.method == "POST":
+        corrected_text = (request.POST.get("corrected_report") or "").strip()
+        notes = (request.POST.get("notes") or "").strip()
+        if corrected_text:
+            try:
+                corrected_report = json.loads(corrected_text)
+            except json.JSONDecodeError:
+                corrected_report = None
+            if corrected_report is not None:
+                SlopReportCorrection.objects.filter(report=report, is_current=True).update(
+                    is_current=False
+                )
+                SlopReportCorrection.objects.create(
+                    report=report,
+                    editor=request.user,
+                    original_report=report.report,
+                    corrected_report=corrected_report,
+                    notes=notes,
+                    is_current=True,
+                )
+
+    corrections = report.corrections.order_by("-created_at")
+    current = corrections.filter(is_current=True).first()
+    return render(
+        request,
+        "slop_detection/admin_report_correction.html",
+        {
+            "report": report,
+            "current_correction": current,
+            "corrections": corrections,
+        },
+    )
+
+
+@user_passes_test(_is_admin)
+@require_http_methods(["GET", "POST"])
 def admin_training(request):
     message = ""
     error = ""
@@ -145,14 +193,25 @@ def admin_training(request):
             message = "Jobs refreshed."
         else:
             corrections = ContentCorrection.objects.filter(is_current=True)
-            jsonl_text = build_training_jsonl(corrections)
+            report_corrections = SlopReportCorrection.objects.filter(is_current=True).select_related(
+                "report", "report__content"
+            )
+            if action == "train_report" or action == "export_report":
+                jsonl_text = build_report_training_jsonl(report_corrections)
+            else:
+                jsonl_text = build_training_jsonl(corrections)
             if not jsonl_text.strip():
                 error = "No corrected samples available."
-            elif action == "export":
+            elif action == "export" or action == "export_report":
                 response = HttpResponse(jsonl_text, content_type="application/jsonl")
-                response["Content-Disposition"] = "attachment; filename=slop_corrections.jsonl"
+                filename = (
+                    "slop_report_corrections.jsonl"
+                    if action == "export_report"
+                    else "slop_corrections.jsonl"
+                )
+                response["Content-Disposition"] = f"attachment; filename={filename}"
                 return response
-            elif action == "train":
+            elif action == "train" or action == "train_report":
                 try:
                     file_data = upload_training_file(jsonl_text)
                     training_file_id = file_data.get("id", "")

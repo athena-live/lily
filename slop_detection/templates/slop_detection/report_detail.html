@@ -301,6 +301,11 @@
         <a class="btn btn-ghost" href="{% url 'content_ingestion:detail' report.content.id %}">
           Back to content
         </a>
+        {% if request.user.is_staff %}
+          <a class="btn" href="{% url 'slop_detection:admin_report_correction' report.id %}">
+            Admin: correct report
+          </a>
+        {% endif %}
       </div>
     </div>
     <script>

@@ -75,6 +75,29 @@ class FineTuneJob(models.Model):
         return f"FineTuneJob(id={self.id}, job_id={self.job_id})"
 
 
+class SlopReportCorrection(models.Model):
+    report = models.ForeignKey(
+        SlopReport,
+        on_delete=models.CASCADE,
+        related_name="corrections",
+    )
+    editor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="slop_report_corrections",
+    )
+    original_report = models.JSONField()
+    corrected_report = models.JSONField()
+    notes = models.TextField(blank=True, default="")
+    is_current = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"SlopReportCorrection(id={self.id}, report_id={self.report_id})"
+
+
 class SiteModelConfig(models.Model):
     current_model = models.CharField(max_length=200, default="gpt-4o-mini")
     updated_by = models.ForeignKey(
