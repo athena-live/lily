@@ -325,13 +325,14 @@ def _extract_json(text):
     raise ValueError("Invalid JSON response")
 
 
-def _openai_request(messages, model=None, temperature=0.2, timeout=30):
+def _openai_request(messages, model=None, temperature=0.2, timeout=None):
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
     base_url = os.environ.get("OPENAI_API_BASE_URL", "https://api.openai.com/v1")
     model = model or os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+    timeout = timeout or float(os.environ.get("SLOP_REQUEST_TIMEOUT", "25"))
 
     payload = {
         "model": model,
@@ -366,7 +367,7 @@ def _run_critic(prompt, text, paragraphs):
     return _extract_json(raw)
 
 
-def _logical_consistency_runs(text, paragraphs, runs=3):
+def _logical_consistency_runs(text, paragraphs, runs):
     prompt = (
         "Analyze the text for contradictions. Return JSON with keys: "
         "contradictions (array of objects with a, b, explanation, paragraph_index), "
@@ -378,7 +379,7 @@ def _logical_consistency_runs(text, paragraphs, runs=3):
     return outputs
 
 
-def _claim_support_runs(text, paragraphs, runs=3):
+def _claim_support_runs(text, paragraphs, runs):
     prompt = (
         "Extract claims and flag unsupported or overconfident claims. "
         "Return JSON with keys: unsupported_claims (array of objects with claim, reason, paragraph_index), "
@@ -390,7 +391,7 @@ def _claim_support_runs(text, paragraphs, runs=3):
     return outputs
 
 
-def _topic_drift_runs(text, paragraphs, runs=3):
+def _topic_drift_runs(text, paragraphs, runs):
     prompt = (
         "Evaluate coherence between paragraphs. Return JSON with keys: "
         "drift_points (array of objects with from_paragraph, to_paragraph, explanation), "
@@ -402,7 +403,7 @@ def _topic_drift_runs(text, paragraphs, runs=3):
     return outputs
 
 
-def _filler_runs(text, paragraphs, runs=3):
+def _filler_runs(text, paragraphs, runs):
     prompt = (
         "Detect filler, vagueness, and buzzwords. Return JSON with keys: "
         "filler_phrases (array), vagueness_score (0-100). Text: {text}"
@@ -444,10 +445,13 @@ def analyze_content(text):
     structural = structural_preprocess(text)
     paragraphs = structural["paragraphs"]
 
-    logical_runs = _logical_consistency_runs(normalized, paragraphs)
-    support_runs = _claim_support_runs(normalized, paragraphs)
-    drift_runs = _topic_drift_runs(normalized, paragraphs)
-    filler_runs = _filler_runs(normalized, paragraphs)
+    runs = int(os.environ.get("SLOP_CRITIC_RUNS", "1"))
+    runs = max(1, min(runs, 3))
+
+    logical_runs = _logical_consistency_runs(normalized, paragraphs, runs)
+    support_runs = _claim_support_runs(normalized, paragraphs, runs)
+    drift_runs = _topic_drift_runs(normalized, paragraphs, runs)
+    filler_runs = _filler_runs(normalized, paragraphs, runs)
 
     logical_avg, logical_var = _aggregate_runs(logical_runs, "logical_score")
     support_avg, support_var = _aggregate_runs(support_runs, "support_score")
@@ -480,13 +484,15 @@ def analyze_content(text):
     drift_points = drift_runs[0].get("drift_points", []) if drift_runs else []
     filler_phrases = filler_runs[0].get("filler_phrases", []) if filler_runs else []
 
-    suggested_rewrites = _generate_rewrites(
-        paragraphs,
-        contradictions,
-        unsupported_claims,
-        drift_points,
-        filler_phrases,
-    )
+    suggested_rewrites = []
+    if os.environ.get("SLOP_ENABLE_REWRITES", "true").lower() in ("1", "true", "yes", "on"):
+        suggested_rewrites = _generate_rewrites(
+            paragraphs,
+            contradictions,
+            unsupported_claims,
+            drift_points,
+            filler_phrases,
+        )
 
     report = {
         "slop_score": slop_score,
@@ -536,7 +542,9 @@ def _generate_rewrites(paragraphs, contradictions, unsupported_claims, drift_poi
         return []
 
     suggestions = []
-    for idx in target_indices[:3]:
+    limit = int(os.environ.get("SLOP_REWRITE_LIMIT", "2"))
+    limit = max(0, min(limit, 5))
+    for idx in target_indices[:limit]:
         paragraph = paragraphs[idx]
         prompt = (
             "Rewrite the paragraph to remove filler, add a concrete example, "
