@@ -355,7 +355,7 @@ def _openai_request(messages, model=None, temperature=0.2, timeout=None):
     return data["choices"][0]["message"]["content"]
 
 
-def _run_critic(prompt, text, paragraphs):
+def _run_critic(prompt, text, paragraphs, model=None):
     messages = [
         {
             "role": "system",
@@ -363,11 +363,11 @@ def _run_critic(prompt, text, paragraphs):
         },
         {"role": "user", "content": prompt.format(text=text, paragraphs=paragraphs)},
     ]
-    raw = _openai_request(messages)
+    raw = _openai_request(messages, model=model)
     return _extract_json(raw)
 
 
-def _logical_consistency_runs(text, paragraphs, runs):
+def _logical_consistency_runs(text, paragraphs, runs, model=None):
     prompt = (
         "Analyze the text for contradictions. Return JSON with keys: "
         "contradictions (array of objects with a, b, explanation, paragraph_index), "
@@ -375,11 +375,11 @@ def _logical_consistency_runs(text, paragraphs, runs):
     )
     outputs = []
     for _ in range(runs):
-        outputs.append(_run_critic(prompt, text, paragraphs))
+        outputs.append(_run_critic(prompt, text, paragraphs, model=model))
     return outputs
 
 
-def _claim_support_runs(text, paragraphs, runs):
+def _claim_support_runs(text, paragraphs, runs, model=None):
     prompt = (
         "Extract claims and flag unsupported or overconfident claims. "
         "Return JSON with keys: unsupported_claims (array of objects with claim, reason, paragraph_index), "
@@ -387,11 +387,11 @@ def _claim_support_runs(text, paragraphs, runs):
     )
     outputs = []
     for _ in range(runs):
-        outputs.append(_run_critic(prompt, text, paragraphs))
+        outputs.append(_run_critic(prompt, text, paragraphs, model=model))
     return outputs
 
 
-def _topic_drift_runs(text, paragraphs, runs):
+def _topic_drift_runs(text, paragraphs, runs, model=None):
     prompt = (
         "Evaluate coherence between paragraphs. Return JSON with keys: "
         "drift_points (array of objects with from_paragraph, to_paragraph, explanation), "
@@ -399,18 +399,18 @@ def _topic_drift_runs(text, paragraphs, runs):
     )
     outputs = []
     for _ in range(runs):
-        outputs.append(_run_critic(prompt, text, paragraphs))
+        outputs.append(_run_critic(prompt, text, paragraphs, model=model))
     return outputs
 
 
-def _filler_runs(text, paragraphs, runs):
+def _filler_runs(text, paragraphs, runs, model=None):
     prompt = (
         "Detect filler, vagueness, and buzzwords. Return JSON with keys: "
         "filler_phrases (array), vagueness_score (0-100). Text: {text}"
     )
     outputs = []
     for _ in range(runs):
-        outputs.append(_run_critic(prompt, text, paragraphs))
+        outputs.append(_run_critic(prompt, text, paragraphs, model=model))
     return outputs
 
 
@@ -440,7 +440,7 @@ def _compute_stability(variances):
     return round(max(0.0, min(100.0, stability)), 2)
 
 
-def analyze_content(text):
+def analyze_content(text, model_override=None):
     normalized = _normalize_text(text)
     structural = structural_preprocess(text)
     paragraphs = structural["paragraphs"]
@@ -448,10 +448,10 @@ def analyze_content(text):
     runs = int(os.environ.get("SLOP_CRITIC_RUNS", "1"))
     runs = max(1, min(runs, 3))
 
-    logical_runs = _logical_consistency_runs(normalized, paragraphs, runs)
-    support_runs = _claim_support_runs(normalized, paragraphs, runs)
-    drift_runs = _topic_drift_runs(normalized, paragraphs, runs)
-    filler_runs = _filler_runs(normalized, paragraphs, runs)
+    logical_runs = _logical_consistency_runs(normalized, paragraphs, runs, model=model_override)
+    support_runs = _claim_support_runs(normalized, paragraphs, runs, model=model_override)
+    drift_runs = _topic_drift_runs(normalized, paragraphs, runs, model=model_override)
+    filler_runs = _filler_runs(normalized, paragraphs, runs, model=model_override)
 
     logical_avg, logical_var = _aggregate_runs(logical_runs, "logical_score")
     support_avg, support_var = _aggregate_runs(support_runs, "support_score")
@@ -492,6 +492,7 @@ def analyze_content(text):
             unsupported_claims,
             drift_points,
             filler_phrases,
+            model_override,
         )
 
     report = {
@@ -522,7 +523,14 @@ def analyze_content(text):
     return report
 
 
-def _generate_rewrites(paragraphs, contradictions, unsupported_claims, drift_points, filler_phrases):
+def _generate_rewrites(
+    paragraphs,
+    contradictions,
+    unsupported_claims,
+    drift_points,
+    filler_phrases,
+    model_override=None,
+):
     target_indices = set()
     for item in contradictions:
         idx = item.get("paragraph_index")
@@ -553,7 +561,7 @@ def _generate_rewrites(paragraphs, contradictions, unsupported_claims, drift_poi
             "Paragraph: {paragraph}"
         )
         try:
-            output = _run_critic(prompt, paragraph, paragraphs)
+            output = _run_critic(prompt, paragraph, paragraphs, model=model_override)
         except Exception:
             continue
         if output.get("original") and output.get("revised"):

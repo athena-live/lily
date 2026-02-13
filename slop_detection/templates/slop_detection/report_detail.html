@@ -181,6 +181,9 @@
         </div>
         <nav class="nav">
           <a href="{% url 'content_ingestion:list' %}">All content</a>
+          {% if request.user.is_staff %}
+            <a href="{% url 'slop_detection:admin_ingestions' %}">Admin</a>
+          {% endif %}
           <a href="/profile/">Profile</a>
         </nav>
       </header>
@@ -189,6 +192,7 @@
         <h1 class="title">Slop report</h1>
         <p class="subtitle">
           {{ report.content.name }} · Generated {{ report.created_at|date:"M d, Y H:i" }}
+          {% if report.report.model_used %} · Model {{ report.report.model_used }}{% endif %}
         </p>
       </section>
 

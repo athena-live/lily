@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lily — {{ item.name }}</title>
+    <title>Lily — Admin Review</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
@@ -14,7 +14,6 @@
         --accent: #d96c2c;
         --mist: rgba(15, 26, 28, 0.08);
         --glow: rgba(217, 108, 44, 0.16);
-        --danger: #b12a2a;
       }
 
       * {
@@ -32,10 +31,9 @@
       }
 
       .page {
-        max-width: 1100px;
+        max-width: 1200px;
         margin: 0 auto;
         padding: 40px 20px 80px;
-        min-height: 100vh;
         display: flex;
         flex-direction: column;
         gap: 24px;
@@ -78,47 +76,47 @@
       .title {
         font-family: "Fraunces", serif;
         font-size: clamp(2rem, 4vw, 3rem);
-        margin: 0 0 6px;
+        margin: 0;
       }
 
-      .meta {
+      .subtitle {
         color: var(--ink-muted);
+        margin: 6px 0 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 18px 36px rgba(15, 26, 28, 0.12);
+      }
+
+      th,
+      td {
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(15, 26, 28, 0.08);
         font-size: 0.95rem;
       }
 
-      .content-card {
-        background: rgba(255, 255, 255, 0.85);
-        border: 1px solid rgba(217, 108, 44, 0.2);
-        border-radius: 22px;
-        padding: 24px;
-        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.12);
-      }
-
-      pre {
-        margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
-        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
-        line-height: 1.6;
-      }
-
-      .actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
+      th {
+        background: rgba(217, 108, 44, 0.12);
       }
 
       .btn {
         border: none;
-        padding: 10px 18px;
+        padding: 8px 14px;
         border-radius: 999px;
         font-weight: 600;
         background: var(--accent);
         color: #fff8f2;
         cursor: pointer;
         text-decoration: none;
-        box-shadow: 0 12px 25px var(--glow);
+        box-shadow: 0 10px 20px var(--glow);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: inline-block;
       }
 
       .btn-ghost {
@@ -128,27 +126,9 @@
         box-shadow: none;
       }
 
-      .btn-outline {
-        background: rgba(217, 108, 44, 0.08);
-        color: var(--accent);
-        border: 1px solid rgba(217, 108, 44, 0.4);
-        box-shadow: none;
-      }
-
-      .btn-danger {
-        background: rgba(177, 42, 42, 0.12);
-        color: var(--danger);
-        border: 1px solid rgba(177, 42, 42, 0.35);
-        box-shadow: none;
-      }
-
       .btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 18px 35px var(--glow);
-      }
-
-      form {
-        margin: 0;
+        box-shadow: 0 16px 32px var(--glow);
       }
     </style>
   </head>
@@ -157,41 +137,53 @@
       <header>
         <div class="brand">
           <div class="brand-badge">L</div>
-          <div>Lily</div>
+          <div>Lily Admin</div>
         </div>
         <nav class="nav">
           <a href="{% url 'content_ingestion:list' %}">All content</a>
-          {% if request.user.is_staff %}
-            <a href="{% url 'slop_detection:admin_ingestions' %}">Admin</a>
-          {% endif %}
+          <a href="{% url 'slop_detection:admin_training' %}">Training</a>
           <a href="/profile/">Profile</a>
         </nav>
       </header>
 
       <section>
-        <h1 class="title">{{ item.name }}</h1>
-        <div class="meta">Created {{ item.created_at|date:"M d, Y" }}</div>
+        <h1 class="title">All ingestions</h1>
+        <p class="subtitle">Review and correct content across the site.</p>
       </section>
 
-      <div class="actions">
-        <a class="btn" href="{% url 'content_ingestion:edit' item.id %}">Edit</a>
-        <form method="post" action="{% url 'slop_detection:analyze' item.id %}">
-          {% csrf_token %}
-          <button class="btn btn-outline" type="submit">Run slop check</button>
-        </form>
-        <a class="btn btn-ghost" href="{% url 'slop_detection:latest_report' item.id %}">
-          View latest report
-        </a>
-        <a class="btn btn-ghost" href="{% url 'content_ingestion:ingest' %}">New ingestion</a>
-        <form method="post" action="{% url 'content_ingestion:delete' item.id %}">
-          {% csrf_token %}
-          <button class="btn btn-danger" type="submit">Delete</button>
-        </form>
-      </div>
-
-      <div class="content-card">
-        <pre>{{ item.raw_text }}</pre>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Content</th>
+            <th>User</th>
+            <th>Created</th>
+            <th>Corrections</th>
+            <th>Reports</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{% if item.user %}{{ item.user.email }}{% else %}Anonymous{% endif %}</td>
+              <td>{{ item.created_at|date:"M d, Y" }}</td>
+              <td>{{ item.corrections.count }}</td>
+              <td>{{ item.slop_reports.count }}</td>
+              <td>
+                <a class="btn" href="{% url 'content_ingestion:detail' item.id %}">View</a>
+                <a class="btn btn-ghost" href="{% url 'slop_detection:admin_correction' item.id %}">
+                  Correct
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6">No ingestions found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </body>
 </html>

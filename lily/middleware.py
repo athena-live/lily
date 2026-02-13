@@ -16,6 +16,8 @@ class SubscriptionRequiredMiddleware:
             self.subscription_path = reverse("home:subscription")
 
         if request.user.is_authenticated:
+            if request.user.is_staff or request.user.is_superuser:
+                return self.get_response(request)
             path = request.path
             if (
                 path.startswith("/static/")

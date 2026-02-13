@@ -1,11 +1,16 @@
-from django.http import Http404, JsonResponse
+import os
+
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
+from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
 
 from content_ingestion.models import IngestedContent
 
 from .engine import analyze_content
-from .models import SlopReport
+from .finetune import build_training_jsonl, create_fine_tune_job, get_fine_tune_job, upload_training_file
+from .models import ContentCorrection, FineTuneJob, SiteModelConfig, SlopReport
 
 
 def _base_queryset(request):
@@ -14,13 +19,26 @@ def _base_queryset(request):
     return IngestedContent.objects.filter(user__isnull=True)
 
 
+def _is_admin(user):
+    return getattr(user, "is_authenticated", False) and getattr(user, "is_staff", False)
+
+
+def _get_active_model():
+    config = SiteModelConfig.objects.order_by("-updated_at").first()
+    if config and config.current_model:
+        return config.current_model
+    return os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+
+
 @require_http_methods(["POST"])
 def analyze(request, content_id):
     item = _base_queryset(request).filter(id=content_id).first()
     if not item:
         raise Http404("Content not found.")
 
-    report = analyze_content(item.raw_text)
+    active_model = _get_active_model()
+    report = analyze_content(item.raw_text, model_override=active_model)
+    report["model_used"] = active_model
     saved_report = SlopReport.objects.create(
         user=request.user if getattr(request.user, "is_authenticated", False) else None,
         content=item,
@@ -56,4 +74,120 @@ def latest_report(request, content_id):
         raise Http404("Report not found.")
     return render(request, "slop_detection/report_detail.html", {"report": report})
 
-# Create your views here.
+
+@user_passes_test(_is_admin)
+@require_http_methods(["GET"])
+def admin_ingestions(request):
+    items = (
+        IngestedContent.objects.select_related("user")
+        .prefetch_related("corrections", "slop_reports")
+        .order_by("-created_at")
+    )
+    return render(request, "slop_detection/admin_ingestions.html", {"items": items})
+
+
+@user_passes_test(_is_admin)
+@require_http_methods(["GET", "POST"])
+def admin_correction(request, content_id):
+    item = IngestedContent.objects.select_related("user").filter(id=content_id).first()
+    if not item:
+        raise Http404("Content not found.")
+
+    if request.method == "POST":
+        corrected_text = (request.POST.get("corrected_text") or "").strip()
+        notes = (request.POST.get("notes") or "").strip()
+        if corrected_text:
+            ContentCorrection.objects.filter(content=item, is_current=True).update(is_current=False)
+            ContentCorrection.objects.create(
+                content=item,
+                editor=request.user,
+                original_text=item.raw_text,
+                corrected_text=corrected_text,
+                notes=notes,
+                is_current=True,
+            )
+
+    corrections = item.corrections.order_by("-created_at")
+    current = corrections.filter(is_current=True).first()
+    return render(
+        request,
+        "slop_detection/admin_correction.html",
+        {
+            "item": item,
+            "current_correction": current,
+            "corrections": corrections,
+        },
+    )
+
+
+@user_passes_test(_is_admin)
+@require_http_methods(["GET", "POST"])
+def admin_training(request):
+    message = ""
+    error = ""
+    jobs = FineTuneJob.objects.order_by("-created_at")
+    config = SiteModelConfig.objects.order_by("-updated_at").first()
+    active_model = config.current_model if config else os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        base_model = (request.POST.get("base_model") or "").strip() or active_model
+        if action == "refresh":
+            for job in jobs:
+                try:
+                    data = get_fine_tune_job(job.job_id)
+                except Exception:
+                    continue
+                job.status = data.get("status", job.status)
+                job.fine_tuned_model = data.get("fine_tuned_model") or job.fine_tuned_model
+                job.metadata = data
+                job.save(update_fields=["status", "fine_tuned_model", "metadata"])
+            message = "Jobs refreshed."
+        else:
+            corrections = ContentCorrection.objects.filter(is_current=True)
+            jsonl_text = build_training_jsonl(corrections)
+            if not jsonl_text.strip():
+                error = "No corrected samples available."
+            elif action == "export":
+                response = HttpResponse(jsonl_text, content_type="application/jsonl")
+                response["Content-Disposition"] = "attachment; filename=slop_corrections.jsonl"
+                return response
+            elif action == "train":
+                try:
+                    file_data = upload_training_file(jsonl_text)
+                    training_file_id = file_data.get("id", "")
+                    job_data = create_fine_tune_job(training_file_id, base_model)
+                    FineTuneJob.objects.create(
+                        created_by=request.user,
+                        training_file_id=training_file_id,
+                        job_id=job_data.get("id", ""),
+                        base_model=base_model,
+                        status=job_data.get("status", "queued"),
+                        fine_tuned_model=job_data.get("fine_tuned_model", ""),
+                        metadata=job_data,
+                    )
+                    message = "Fine-tune job created."
+                except Exception as exc:
+                    error = f"Failed to create fine-tune job: {exc}"
+
+    jobs = FineTuneJob.objects.order_by("-created_at")
+    return render(
+        request,
+        "slop_detection/admin_training.html",
+        {
+            "jobs": jobs,
+            "message": message,
+            "error": error,
+            "active_model": active_model,
+        },
+    )
+
+
+@user_passes_test(_is_admin)
+@require_http_methods(["POST"])
+def admin_set_model(request):
+    model_name = (request.POST.get("model_name") or "").strip()
+    if not model_name:
+        return HttpResponse("Model name required", status=400)
+    SiteModelConfig.objects.create(current_model=model_name, updated_by=request.user)
+    return HttpResponseRedirect(reverse("slop_detection:admin_training"))
