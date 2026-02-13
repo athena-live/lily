@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lily — {{ item.name }}</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+      :root {
+        --ink: #0f1a1c;
+        --ink-muted: #41565b;
+        --paper: #f4f1e9;
+        --accent: #d96c2c;
+        --mist: rgba(15, 26, 28, 0.08);
+        --glow: rgba(217, 108, 44, 0.16);
+        --danger: #b12a2a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
+          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
+          var(--paper);
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: linear-gradient(145deg, #ffe2c6, #d96c2c);
+        box-shadow: 0 10px 25px var(--glow);
+        display: grid;
+        place-items: center;
+        color: #5a210a;
+        font-weight: 700;
+      }
+
+      .nav a {
+        color: var(--ink-muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+        margin-left: 14px;
+      }
+
+      .title {
+        font-family: "Fraunces", serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        margin: 0 0 6px;
+      }
+
+      .meta {
+        color: var(--ink-muted);
+        font-size: 0.95rem;
+      }
+
+      .content-card {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(217, 108, 44, 0.2);
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.12);
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: none;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-weight: 600;
+        background: var(--accent);
+        color: #fff8f2;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: 0 12px 25px var(--glow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--mist);
+        box-shadow: none;
+      }
+
+      .btn-danger {
+        background: rgba(177, 42, 42, 0.12);
+        color: var(--danger);
+        border: 1px solid rgba(177, 42, 42, 0.35);
+        box-shadow: none;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 35px var(--glow);
+      }
+
+      form {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="brand">
+          <div class="brand-badge">L</div>
+          <div>Lily</div>
+        </div>
+        <nav class="nav">
+          <a href="{% url 'content_ingestion:list' %}">All content</a>
+          <a href="/profile/">Profile</a>
+        </nav>
+      </header>
+
+      <section>
+        <h1 class="title">{{ item.name }}</h1>
+        <div class="meta">Created {{ item.created_at|date:"M d, Y" }}</div>
+      </section>
+
+      <div class="actions">
+        <a class="btn" href="{% url 'content_ingestion:edit' item.id %}">Edit</a>
+        <a class="btn btn-ghost" href="{% url 'content_ingestion:ingest' %}">New ingestion</a>
+        <form method="post" action="{% url 'content_ingestion:delete' item.id %}">
+          {% csrf_token %}
+          <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+      </div>
+
+      <div class="content-card">
+        <pre>{{ item.raw_text }}</pre>
+      </div>
+    </div>
+  </body>
+</html>
