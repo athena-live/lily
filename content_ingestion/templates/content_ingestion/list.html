@@ -197,6 +197,9 @@
                   {% csrf_token %}
                   <button class="btn btn-outline" type="submit">Slop check</button>
                 </form>
+                <a class="btn btn-outline" href="{% url 'slop_detection:latest_report' item.id %}">
+                  Latest report
+                </a>
               </div>
             </div>
           {% endfor %}

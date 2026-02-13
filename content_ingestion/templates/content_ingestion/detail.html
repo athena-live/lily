@@ -176,6 +176,9 @@
           {% csrf_token %}
           <button class="btn btn-outline" type="submit">Run slop check</button>
         </form>
+        <a class="btn btn-ghost" href="{% url 'slop_detection:latest_report' item.id %}">
+          View latest report
+        </a>
         <a class="btn btn-ghost" href="{% url 'content_ingestion:ingest' %}">New ingestion</a>
         <form method="post" action="{% url 'content_ingestion:delete' item.id %}">
           {% csrf_token %}
