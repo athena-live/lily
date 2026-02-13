@@ -106,6 +106,13 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
 
+      .btn-outline {
+        background: rgba(217, 108, 44, 0.08);
+        color: var(--accent);
+        border: 1px solid rgba(217, 108, 44, 0.4);
+        box-shadow: none;
+      }
+
       .btn:hover {
         transform: translateY(-1px);
         box-shadow: 0 18px 35px var(--glow);
@@ -184,7 +191,13 @@
                 <h3>{{ item.name }}</h3>
                 <div class="meta">Created {{ item.created_at|date:"M d, Y" }}</div>
               </div>
-              <a class="btn" href="{% url 'content_ingestion:detail' item.id %}">View</a>
+              <div>
+                <a class="btn" href="{% url 'content_ingestion:detail' item.id %}">View</a>
+                <form method="post" action="{% url 'slop_detection:analyze' item.id %}" style="display:inline-block">
+                  {% csrf_token %}
+                  <button class="btn btn-outline" type="submit">Slop check</button>
+                </form>
+              </div>
             </div>
           {% endfor %}
         {% else %}

@@ -128,6 +128,13 @@
         box-shadow: none;
       }
 
+      .btn-outline {
+        background: rgba(217, 108, 44, 0.08);
+        color: var(--accent);
+        border: 1px solid rgba(217, 108, 44, 0.4);
+        box-shadow: none;
+      }
+
       .btn-danger {
         background: rgba(177, 42, 42, 0.12);
         color: var(--danger);
@@ -165,6 +172,10 @@
 
       <div class="actions">
         <a class="btn" href="{% url 'content_ingestion:edit' item.id %}">Edit</a>
+        <form method="post" action="{% url 'slop_detection:analyze' item.id %}">
+          {% csrf_token %}
+          <button class="btn btn-outline" type="submit">Run slop check</button>
+        </form>
         <a class="btn btn-ghost" href="{% url 'content_ingestion:ingest' %}">New ingestion</a>
         <form method="post" action="{% url 'content_ingestion:delete' item.id %}">
           {% csrf_token %}
