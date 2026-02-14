@@ -5,377 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lily — AI Slop Detector</title>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
-
-      :root {
-        --ink: #0f1a1c;
-        --ink-muted: #41565b;
-        --paper: #f4f1e9;
-        --accent: #d96c2c;
-        --accent-dark: #a44b1e;
-        --mist: rgba(15, 26, 28, 0.08);
-        --glow: rgba(217, 108, 44, 0.16);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
-        color: var(--ink);
-        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
-          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
-          var(--paper);
-        min-height: 100vh;
-      }
-
-      .page {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 40px 20px 80px;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-      }
-
-      .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-      }
-
-      .brand-badge {
-        width: 40px;
-        height: 40px;
-        border-radius: 14px;
-        background: linear-gradient(145deg, #ffe2c6, #d96c2c);
-        box-shadow: 0 10px 25px var(--glow);
-        display: grid;
-        place-items: center;
-        color: #5a210a;
-        font-weight: 700;
-      }
-
-      .nav {
-        display: flex;
-        gap: 16px;
-        font-size: 0.95rem;
-        color: var(--ink-muted);
-      }
-
-      .nav a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .hero {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 36px;
-        margin-top: 56px;
-        align-items: center;
-      }
-
-      .hero-copy {
-        position: relative;
-      }
-
-      .hero-visual {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-        margin: 0 0 20px;
-        display: block;
-        border-radius: 24px;
-        border: 1px solid rgba(217, 108, 44, 0.25);
-        box-shadow: 0 24px 50px rgba(15, 26, 28, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
-      }
-
-      .hero-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.95rem;
-        color: var(--ink-muted);
-        background: linear-gradient(135deg, #fff, #fef3e9);
-        border: 1px solid rgba(217, 108, 44, 0.25);
-        padding: 6px 14px;
-        border-radius: 999px;
-        margin-bottom: 16px;
-        box-shadow: 0 12px 24px rgba(217, 108, 44, 0.12);
-      }
-
-      .hero-tag strong {
-        color: var(--accent-dark);
-        font-weight: 600;
-      }
-
-      .hero h1 {
-        font-family: "Fraunces", serif;
-        font-size: clamp(2.6rem, 5vw, 4.4rem);
-        line-height: 1.05;
-        margin: 0 0 18px;
-      }
-
-      .hero p {
-        font-size: 1.1rem;
-        color: var(--ink-muted);
-        margin: 0 0 26px;
-        max-width: 520px;
-      }
-
-      .cta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-      }
-
-      .btn {
-        border: none;
-        padding: 12px 22px;
-        border-radius: 999px;
-        font-weight: 600;
-        font-size: 0.98rem;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .btn-primary {
-        background: var(--accent);
-        color: #fff8f2;
-        box-shadow: 0 12px 25px var(--glow);
-      }
-
-      .btn-secondary {
-        background: transparent;
-        color: var(--ink);
-        border: 1px solid var(--mist);
-      }
-
-      .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 18px 35px var(--glow);
-      }
-
-      .theme-toggle {
-        border: 1px solid var(--mist);
-        background: rgba(255, 255, 255, 0.55);
-        color: var(--ink);
-        border-radius: 999px;
-        padding: 8px 14px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .theme-toggle:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 25px var(--glow);
-      }
-
-      .panel {
-        background: #ffffffb5;
-        border: 1px solid var(--mist);
-        border-radius: 24px;
-        padding: 26px;
-        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.08);
-        backdrop-filter: blur(6px);
-      }
-
-      .signal {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
-      }
-
-      .hero-surface {
-        position: relative;
-        padding: 12px;
-        border-radius: 28px;
-        background: linear-gradient(160deg, rgba(255, 241, 229, 0.7), rgba(232, 242, 239, 0.7));
-        border: 1px solid rgba(15, 26, 28, 0.06);
-        box-shadow: 0 16px 30px rgba(15, 26, 28, 0.08);
-      }
-
-      .signal {
-        display: grid;
-        gap: 18px;
-      }
-
-      .signal .meter {
-        height: 12px;
-        background: linear-gradient(90deg, #f6d2b9, #d96c2c 60%, #7a2f13 100%);
-        border-radius: 999px;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .signal .meter::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-        animation: shimmer 2.4s ease-in-out infinite;
-      }
-
-      @keyframes shimmer {
-        0% {
-          transform: translateX(-100%);
-        }
-        100% {
-          transform: translateX(100%);
-        }
-      }
-
-      .features {
-        margin-top: 70px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-      }
-
-      .feature-card {
-        padding: 20px 22px;
-        border-radius: 18px;
-        background: #fff;
-        border: 1px solid var(--mist);
-        box-shadow: 0 12px 24px rgba(15, 26, 28, 0.08);
-        transition: transform 0.2s ease;
-      }
-
-      .feature-card:hover {
-        transform: translateY(-4px);
-      }
-
-      .feature-card h3 {
-        margin: 0 0 10px;
-        font-size: 1.05rem;
-      }
-
-      .feature-card p {
-        margin: 0;
-        color: var(--ink-muted);
-        font-size: 0.95rem;
-      }
-
-      .footer {
-        margin-top: auto;
-        padding-top: 60px;
-        color: var(--ink-muted);
-        font-size: 0.9rem;
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .footer a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      html[data-theme="dark"] {
-        --ink: #f4f3ee;
-        --ink-muted: #b7c0c2;
-        --paper: #0b1112;
-        --accent: #f0a56d;
-        --accent-dark: #f6c198;
-        --mist: rgba(244, 243, 238, 0.14);
-        --glow: rgba(240, 165, 109, 0.18);
-      }
-
-      html[data-theme="dark"] body {
-        background: radial-gradient(800px 400px at 20% 10%, rgba(35, 42, 41, 0.65) 0%, transparent 70%),
-          radial-gradient(800px 500px at 90% 0%, rgba(24, 34, 34, 0.7) 0%, transparent 70%),
-          var(--paper);
-      }
-
-      html[data-theme="dark"] .panel {
-        background: rgba(14, 18, 19, 0.82);
-        border-color: rgba(244, 243, 238, 0.08);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      }
-
-      html[data-theme="dark"] .hero-visual {
-        border-color: rgba(244, 243, 238, 0.08);
-        background: linear-gradient(135deg, rgba(24, 30, 31, 0.9), rgba(14, 18, 19, 0.8));
-        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-      }
-
-      html[data-theme="dark"] .hero-tag {
-        background: linear-gradient(135deg, rgba(19, 23, 24, 0.96), rgba(22, 28, 28, 0.9));
-        border-color: rgba(240, 165, 109, 0.2);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-      }
-
-      html[data-theme="dark"] .hero-surface {
-        background: linear-gradient(160deg, rgba(26, 34, 33, 0.7), rgba(15, 20, 20, 0.7));
-        border-color: rgba(244, 243, 238, 0.08);
-        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4);
-      }
-
-      html[data-theme="dark"] .feature-card {
-        background: rgba(14, 18, 19, 0.92);
-        border-color: rgba(244, 243, 238, 0.08);
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
-      }
-
-      html[data-theme="dark"] .theme-toggle {
-        background: rgba(18, 22, 23, 0.7);
-      }
-
-      html[data-theme="dark"] .btn-secondary {
-        border-color: rgba(244, 243, 238, 0.2);
-      }
-
-      @media (max-width: 700px) {
-        header {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .nav {
-          flex-wrap: wrap;
-        }
-
-        .header-actions {
-          width: 100%;
-          justify-content: flex-start;
-        }
-
-        .hero {
-          gap: 24px;
-        }
-
-        .hero-visual {
-          width: 100%;
-          margin: 0 0 16px;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/lily.css' %}" />
   </head>
   <body data-auth="{{ request.user.is_authenticated|yesno:'1,0' }}" data-theme-endpoint="{% url 'home:set_theme' %}">
     <div class="page">
@@ -383,16 +13,14 @@
         <div class="brand">
           <div>
             Lily
-            <div style="font-size: 0.8rem; color: var(--ink-muted); font-weight: 400;">
-              AI slop detector
-            </div>
+            <div class="brand-subtitle">AI slop detector</div>
           </div>
         </div>
         <div class="header-actions">
           <nav class="nav">
             <a href="{% url 'home:root_domain' %}">Home</a>
           </nav>
-          <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+          <button class="btn btn-ghost theme-toggle" type="button" data-theme-toggle aria-pressed="false">
             <span data-theme-label>Light mode</span>
           </button>
         </div>
@@ -418,24 +46,24 @@
             alt="Slop fit flow"
           />
           <div class="panel signal" id="signal">
-          <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--ink-muted);">
+          <div class="signal-head">
             <span>Signal clarity</span>
             <span>82%</span>
           </div>
           <div class="meter" aria-hidden="true"></div>
-          <div style="font-size: 0.95rem; color: var(--ink-muted);">
+          <div class="signal-note">
             Highlights: repetition spikes, template phrasing, low factual anchors.
           </div>
-          <div style="display: grid; gap: 10px;">
-            <div style="display: flex; justify-content: space-between;">
+          <div class="signal-stats">
+            <div class="signal-row">
               <span>Originality</span>
               <strong>High</strong>
             </div>
-            <div style="display: flex; justify-content: space-between;">
+            <div class="signal-row">
               <span>Specificity</span>
               <strong>Medium</strong>
             </div>
-            <div style="display: flex; justify-content: space-between;">
+            <div class="signal-row">
               <span>Evidence</span>
               <strong>Needs work</strong>
             </div>
@@ -471,55 +99,6 @@
         </span>
       </div>
     </div>
-    <script>
-      const themeToggle = document.querySelector("[data-theme-toggle]");
-      const themeLabel = document.querySelector("[data-theme-label]");
-      const root = document.documentElement;
-      const body = document.body;
-      const isAuthed = body.dataset.auth === "1";
-      const themeEndpoint = body.dataset.themeEndpoint;
-
-      const getCookie = (name) => {
-        const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-        return match ? decodeURIComponent(match[2]) : "";
-      };
-
-      const setTheme = (theme, { persist } = { persist: false }) => {
-        root.setAttribute("data-theme", theme);
-        if (themeLabel) {
-          themeLabel.textContent = theme === "dark" ? "Dark mode" : "Light mode";
-        }
-        if (themeToggle) {
-          themeToggle.setAttribute("aria-pressed", theme === "dark");
-        }
-        if (persist) {
-          localStorage.setItem("theme", theme);
-          if (isAuthed && themeEndpoint) {
-            fetch(themeEndpoint, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-              },
-              body: JSON.stringify({ theme }),
-            }).catch(() => {});
-          }
-        }
-      };
-
-      const storedTheme = localStorage.getItem("theme");
-      const serverTheme = root.getAttribute("data-theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme = serverTheme || storedTheme || (prefersDark ? "dark" : "light");
-
-      setTheme(initialTheme, { persist: false });
-
-      if (themeToggle) {
-        themeToggle.addEventListener("click", () => {
-          const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-          setTheme(nextTheme, { persist: true });
-        });
-      }
-    </script>
+    <script defer src="{% static 'js/theme.js' %}"></script>
   </body>
 </html>

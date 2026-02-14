@@ -1,210 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"{% if theme %} data-theme="{{ theme }}"{% endif %}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lily — Slop Detector</title>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
-
-      :root {
-        --ink: #0b1218;
-        --ink-muted: #4a5a66;
-        --paper: #f5f4f1;
-        --panel: #ffffff;
-        --accent: #1c4fd7;
-        --accent-dark: #123aa5;
-        --accent-soft: rgba(28, 79, 215, 0.12);
-        --mist: rgba(11, 18, 24, 0.08);
-        --glow: rgba(28, 79, 215, 0.22);
-        --danger: #b12a2a;
-        --success: #2f7d55;
-        --gold: #e1b757;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(900px 500px at 15% 10%, rgba(28, 79, 215, 0.12) 0%, transparent 65%),
-          radial-gradient(900px 500px at 90% 0%, rgba(225, 183, 87, 0.18) 0%, transparent 70%),
-          var(--paper);
-        min-height: 100vh;
-      }
-
-      .page {
-        max-width: 1160px;
-        margin: 0 auto;
-        padding: 36px 20px 80px;
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-      }
-
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        background: rgba(255, 255, 255, 0.75);
-        border: 1px solid rgba(11, 18, 24, 0.08);
-        border-radius: 20px;
-        padding: 14px 20px;
-        box-shadow: 0 12px 30px rgba(11, 18, 24, 0.08);
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-      }
-
-      .brand-badge {
-        width: 40px;
-        height: 40px;
-        border-radius: 14px;
-        background: linear-gradient(145deg, #e7eefc, #1c4fd7);
-        box-shadow: 0 12px 25px var(--glow);
-        display: grid;
-        place-items: center;
-        color: #0f2b7f;
-        font-weight: 700;
-      }
-
-      .brand-meta {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .brand-meta span {
-        font-size: 0.75rem;
-        color: var(--ink-muted);
-      }
-
-      .nav a {
-        color: var(--ink-muted);
-        text-decoration: none;
-        font-size: 0.95rem;
-        margin-left: 18px;
-      }
-
-      .title {
-        font-family: "Fraunces", serif;
-        font-size: clamp(2.2rem, 4vw, 3.2rem);
-        margin: 0 0 6px;
-      }
-
-      .subtitle {
-        color: var(--ink-muted);
-        margin: 0;
-        line-height: 1.6;
-      }
-
-      .meta-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 999px;
-        padding: 6px 12px;
-        background: rgba(11, 18, 24, 0.06);
-        font-size: 0.85rem;
-        color: var(--ink-muted);
-        margin-bottom: 10px;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 16px;
-      }
-
-      .card {
-        background: var(--panel);
-        border: 1px solid rgba(11, 18, 24, 0.08);
-        border-radius: 22px;
-        padding: 18px 20px;
-        box-shadow: 0 18px 36px rgba(11, 18, 24, 0.12);
-      }
-
-      .score {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-      }
-
-      .score strong {
-        font-size: 2rem;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 10px;
-        border-radius: 999px;
-        background: var(--accent-soft);
-        color: var(--accent);
-        font-size: 0.85rem;
-        font-weight: 600;
-      }
-
-      .section {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .list {
-        display: grid;
-        gap: 10px;
-      }
-
-      .list-item {
-        background: rgba(11, 18, 24, 0.04);
-        border: 1px solid rgba(11, 18, 24, 0.12);
-        border-radius: 14px;
-        padding: 12px 14px;
-      }
-
-      pre {
-        margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
-        font-size: 0.9rem;
-        line-height: 1.5;
-      }
-
-      .btn {
-        border: none;
-        padding: 10px 18px;
-        border-radius: 999px;
-        font-weight: 600;
-        background: var(--accent);
-        color: #f4f7ff;
-        cursor: pointer;
-        text-decoration: none;
-        box-shadow: 0 12px 25px var(--glow);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .btn-ghost {
-        background: rgba(11, 18, 24, 0.06);
-        color: var(--ink);
-        border: 1px solid rgba(11, 18, 24, 0.1);
-        box-shadow: none;
-      }
-
-      .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 18px 35px var(--glow);
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/lily.css' %}" />
   </head>
   <body>
     <div class="page">
@@ -265,7 +66,7 @@
       </div>
 
       <section class="section">
-        <h2 class="title" style="font-size: 1.6rem;">Top issues</h2>
+        <h2 class="title title-sm">Top issues</h2>
         <div class="grid">
           <div class="card section">
             <div class="subtitle">Contradictions</div>
@@ -302,17 +103,17 @@
       </section>
 
       <section class="section">
-        <h2 class="title" style="font-size: 1.6rem;">Suggested rewrites</h2>
+        <h2 class="title title-sm">Suggested rewrites</h2>
         <div class="list">
           {% if report.report.suggested_rewrites %}
             {% for item in report.report.suggested_rewrites %}
               <div class="card">
                 <div class="subtitle">Original</div>
                 <pre>{{ item.original }}</pre>
-                <div class="subtitle" style="margin-top: 12px;">Revised</div>
+                <div class="subtitle subtitle-spaced">Revised</div>
                 <pre>{{ item.revised }}</pre>
                 {% if item.changes_explained %}
-                  <div class="subtitle" style="margin-top: 12px;">Changes</div>
+                  <div class="subtitle subtitle-spaced">Changes</div>
                   <ul>
                     {% for change in item.changes_explained %}
                       <li>{{ change }}</li>
@@ -328,7 +129,7 @@
       </section>
 
       <section class="section">
-        <h2 class="title" style="font-size: 1.6rem;">Raw JSON</h2>
+        <h2 class="title title-sm">Raw JSON</h2>
         <div class="card">
           {{ report.report|json_script:"slop-report" }}
           <pre id="json-output"></pre>
@@ -350,5 +151,6 @@
       const data = JSON.parse(document.getElementById("slop-report").textContent);
       document.getElementById("json-output").textContent = JSON.stringify(data, null, 2);
     </script>
+    <script defer src="{% static 'js/theme.js' %}"></script>
   </body>
 </html>

@@ -1,326 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en"{% if theme %} data-theme="{{ theme }}"{% endif %}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Profile — Lily</title>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
-
-      :root {
-        --ink: #0f1a1c;
-        --ink-muted: #41565b;
-        --paper: #f4f1e9;
-        --accent: #d96c2c;
-        --mist: rgba(15, 26, 28, 0.12);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
-        color: var(--ink);
-        min-height: 100vh;
-        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
-          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
-          var(--paper);
-        display: grid;
-        place-items: center;
-        padding: 40px 20px;
-      }
-
-      .card {
-        width: min(520px, 100%);
-        background: rgba(255, 255, 255, 0.92);
-        border-radius: 24px;
-        border: 1px solid var(--mist);
-        box-shadow: 0 20px 45px rgba(15, 26, 28, 0.12);
-        padding: 28px;
-      }
-
-      h1 {
-        font-family: "Fraunces", serif;
-        margin: 0 0 12px;
-      }
-
-      .meta {
-        color: var(--ink-muted);
-        margin-bottom: 18px;
-      }
-
-      .row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-top: 1px solid var(--mist);
-      }
-
-      .row:first-of-type {
-        border-top: none;
-      }
-
-      .btn {
-        border: none;
-        padding: 10px 18px;
-        border-radius: 999px;
-        font-weight: 600;
-        background: var(--accent);
-        color: #fff8f2;
-        cursor: pointer;
-        text-decoration: none;
-      }
-
-      .link {
-        color: var(--ink-muted);
-        text-decoration: none;
-        font-size: 0.95rem;
-      }
-
-      form {
-        margin: 0;
-      }
-
-      .section {
-        margin-top: 18px;
-        padding-top: 18px;
-        border-top: 1px solid var(--mist);
-      }
-
-      .btn-spaced {
-        margin-top: 18px;
-        display: inline-flex;
-        align-items: center;
-      }
-
-      .section-title {
-        font-size: 1rem;
-        margin: 0 0 12px;
-        color: var(--ink-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .plan-list {
-        display: grid;
-        gap: 10px;
-        margin-bottom: 14px;
-      }
-
-      .plan-option {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid var(--mist);
-        cursor: pointer;
-      }
-
-      .plan-option input {
-        margin: 0;
-      }
-
-      .plan-name {
-        font-weight: 600;
-      }
-
-      .plan-note {
-        color: var(--ink-muted);
-        font-size: 0.9rem;
-        margin-top: 10px;
-      }
-
-      .ref-list {
-        display: grid;
-        gap: 10px;
-        margin-top: 12px;
-      }
-
-      .ref-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid var(--mist);
-      }
-
-      .ref-code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-          "Courier New", monospace;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-      }
-
-      .ref-meta {
-        color: var(--ink-muted);
-        font-size: 0.85rem;
-        margin-top: 4px;
-      }
-
-      .badge {
-        background: rgba(217, 108, 44, 0.12);
-        color: var(--accent);
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
-      .stat-grid {
-        display: grid;
-        gap: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        margin-top: 12px;
-      }
-
-      .stat-card {
-        padding: 12px;
-        border-radius: 14px;
-        border: 1px solid var(--mist);
-        background: rgba(255, 255, 255, 0.6);
-      }
-
-      .stat-label {
-        color: var(--ink-muted);
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .stat-value {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-top: 6px;
-      }
-
-      .ref-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-        font-size: 0.9rem;
-      }
-
-      .ref-table th,
-      .ref-table td {
-        text-align: left;
-        padding: 8px 6px;
-        border-bottom: 1px solid var(--mist);
-      }
-
-      .ref-table th {
-        color: var(--ink-muted);
-        font-weight: 600;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .ref-actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .ref-link {
-        width: 100%;
-        border: 1px solid var(--mist);
-        border-radius: 12px;
-        padding: 8px 10px;
-        background: rgba(255, 255, 255, 0.7);
-        font-size: 0.85rem;
-        color: var(--ink);
-      }
-
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 26, 28, 0.4);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-
-      .modal {
-        width: min(420px, 100%);
-        background: #ffffff;
-        border-radius: 18px;
-        padding: 20px;
-        box-shadow: 0 20px 50px rgba(15, 26, 28, 0.2);
-        border: 1px solid var(--mist);
-      }
-
-      .modal h2 {
-        margin: 0 0 8px;
-        font-family: "Fraunces", serif;
-        font-size: 1.4rem;
-      }
-
-      .modal-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 18px;
-        flex-wrap: wrap;
-      }
-
-      .btn-ghost {
-        background: transparent;
-        color: var(--ink);
-        border: 1px solid var(--mist);
-      }
-
-      .modal-open {
-        overflow: hidden;
-      }
-
-      .theme-toggle {
-        padding: 8px 14px;
-        border-radius: 999px;
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-
-      html[data-theme="dark"] {
-        --ink: #f4f3ee;
-        --ink-muted: #b7c0c2;
-        --paper: #0b1112;
-        --accent: #f0a56d;
-        --mist: rgba(244, 243, 238, 0.14);
-      }
-
-      html[data-theme="dark"] body {
-        background: radial-gradient(800px 400px at 20% 10%, rgba(35, 42, 41, 0.65) 0%, transparent 70%),
-          radial-gradient(800px 500px at 90% 0%, rgba(24, 34, 34, 0.7) 0%, transparent 70%),
-          var(--paper);
-      }
-
-      html[data-theme="dark"] .card {
-        background: rgba(14, 18, 19, 0.9);
-        border-color: rgba(244, 243, 238, 0.08);
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
-      }
-
-      html[data-theme="dark"] .modal {
-        background: rgba(16, 20, 21, 0.98);
-        border-color: rgba(244, 243, 238, 0.08);
-      }
-
-      html[data-theme="dark"] .btn-ghost {
-        border-color: rgba(244, 243, 238, 0.2);
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/lily.css' %}" />
   </head>
-  <body data-auth="{{ request.user.is_authenticated|yesno:'1,0' }}" data-theme-endpoint="{% url 'home:set_theme' %}">
-    <div class="card">
+  <body class="centered" data-auth="{{ request.user.is_authenticated|yesno:'1,0' }}" data-theme-endpoint="{% url 'home:set_theme' %}">
+    <div class="card profile-card">
       <h1>Your profile</h1>
       <div class="meta">
         Signed in as {{ request.user.email|default:request.user.username }}
@@ -352,7 +40,7 @@
         </div>
       {% endif %}
       {% if has_active_subscription %}
-        <div class="section">
+        <div class="profile-section">
           <div class="section-title">Plan actions</div>
           <div class="plan-note">View your plan or make changes.</div>
           {% if cancel_at_period_end and cancel_at_date %}
@@ -364,7 +52,7 @@
           <button class="btn btn-spaced" type="button" data-open-modal>View plan</button>
         </div>
       {% elif canceled_or_ended %}
-        <div class="section">
+        <div class="profile-section">
           <div class="section-title">Plan status</div>
           <div class="plan-note">Your membership has been canceled.</div>
           {% if cancel_at_date %}
@@ -372,7 +60,7 @@
           {% endif %}
         </div>
       {% elif cancel_at_period_end and cancel_at_date %}
-        <div class="section">
+        <div class="profile-section">
           <div class="section-title">Plan status</div>
           <div class="plan-note">
             Your plan is set to cancel on {{ cancel_at_date|date:"M d, Y" }}.
@@ -380,7 +68,7 @@
           </div>
         </div>
       {% else %}
-        <div class="section">
+        <div class="profile-section">
           <div class="plan-note">
             No active subscription yet. Complete checkout to unlock your service.
           </div>
@@ -389,14 +77,14 @@
       {% endif %}
 
       {% if not has_active_subscription and not service_plans %}
-        <div class="section">
+        <div class="profile-section">
           <div class="section-title">Service</div>
           <div class="plan-note">Add your Stripe price IDs in settings to enable plan changes.</div>
           <a class="link" href="{% url 'home:subscription' %}">Choose a service</a>
         </div>
       {% endif %}
 
-      <div class="section">
+      <div class="profile-section">
         <div class="section-title">Referral codes</div>
         <div class="plan-note">
           Generate a new code any time. Older codes stay active.
@@ -433,7 +121,7 @@
         </form>
       </div>
 
-      <div class="section">
+      <div class="profile-section">
         <div class="section-title">Referral dashboard</div>
         <div class="plan-note">Track who signed up with your links.</div>
         <div class="stat-grid">
@@ -495,7 +183,7 @@
             <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
           </div>
           {% if service_plans %}
-            <div class="section" id="change-plan-form">
+            <div class="profile-section" id="change-plan-form">
               <div class="section-title">Change plan</div>
               <div class="plan-note">
                 Select a different plan to upgrade or downgrade. Updates sync automatically after
@@ -522,103 +210,6 @@
         </div>
       </div>
     {% endif %}
-
-    <script>
-      const openButtons = document.querySelectorAll("[data-open-modal]");
-      const closeButtons = document.querySelectorAll("[data-close-modal]");
-      const modal = document.querySelector("[data-modal]");
-      const planLink = document.querySelector("[data-open-plans]");
-      const planSection = document.getElementById("change-plan-form");
-      const themeToggle = document.querySelector("[data-theme-toggle]");
-      const themeLabel = document.querySelector("[data-theme-label]");
-      const root = document.documentElement;
-      const body = document.body;
-      const isAuthed = body.dataset.auth === "1";
-      const themeEndpoint = body.dataset.themeEndpoint;
-
-      const openModal = () => {
-        if (!modal) return;
-        modal.style.display = "flex";
-        document.body.classList.add("modal-open");
-      };
-
-      const closeModal = () => {
-        if (!modal) return;
-        modal.style.display = "none";
-        document.body.classList.remove("modal-open");
-      };
-
-      openButtons.forEach((button) => button.addEventListener("click", openModal));
-      if (planLink && planSection) {
-        planLink.addEventListener("click", (event) => {
-          event.preventDefault();
-          planSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      }
-      closeButtons.forEach((button) => button.addEventListener("click", closeModal));
-
-      if (modal) {
-        modal.addEventListener("click", (event) => {
-          if (event.target === modal) {
-            closeModal();
-          }
-        });
-      }
-
-      const getCookie = (name) => {
-        const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-        return match ? decodeURIComponent(match[2]) : "";
-      };
-
-      const setTheme = (theme, { persist } = { persist: false }) => {
-        root.setAttribute("data-theme", theme);
-        if (themeLabel) {
-          themeLabel.textContent = theme === "dark" ? "Dark mode" : "Light mode";
-        }
-        if (themeToggle) {
-          themeToggle.setAttribute("aria-pressed", theme === "dark");
-        }
-        if (persist) {
-          localStorage.setItem("theme", theme);
-          if (isAuthed && themeEndpoint) {
-            fetch(themeEndpoint, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-              },
-              body: JSON.stringify({ theme }),
-            }).catch(() => {});
-          }
-        }
-      };
-
-      const storedTheme = localStorage.getItem("theme");
-      const serverTheme = root.getAttribute("data-theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme = serverTheme || storedTheme || (prefersDark ? "dark" : "light");
-
-      setTheme(initialTheme, { persist: false });
-
-      if (themeToggle) {
-        themeToggle.addEventListener("click", () => {
-          const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-          setTheme(nextTheme, { persist: true });
-        });
-      }
-
-      document.querySelectorAll("[data-copy-link]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const card = button.closest(".ref-item");
-          const input = card ? card.querySelector(".ref-link") : null;
-          if (!input) return;
-          input.select();
-          input.setSelectionRange(0, input.value.length);
-          navigator.clipboard.writeText(input.value).catch(() => {
-            document.execCommand("copy");
-          });
-        });
-      });
-    </script>
+    <script defer src="{% static 'js/theme.js' %}"></script>
   </body>
 </html>
