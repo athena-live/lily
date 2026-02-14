@@ -1192,3 +1192,51 @@ html[data-theme="dark"] .content-card {
   background: rgba(16, 20, 21, 0.85);
   border-color: rgba(244, 243, 238, 0.12);
 }
+
+html[data-theme="dark"] .feature {
+  background: rgba(14, 18, 19, 0.92);
+  border-color: rgba(244, 243, 238, 0.08);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .feature p {
+  color: var(--ink-muted);
+}
+
+html[data-theme="dark"] .trust {
+  color: var(--ink-muted);
+}
+
+html[data-theme="dark"] .meta-card {
+  background: rgba(14, 18, 19, 0.92);
+  border-color: rgba(244, 243, 238, 0.08);
+}
+
+html[data-theme="dark"] .alert {
+  background: rgba(244, 243, 238, 0.08);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .alert-success {
+  background: rgba(47, 125, 85, 0.2);
+  color: #bfe5d1;
+}
+
+html[data-theme="dark"] .alert-error {
+  background: rgba(177, 42, 42, 0.22);
+  color: #f3b9b9;
+}
+
+html[data-theme="dark"] .hint {
+  color: var(--ink-muted);
+}
+
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background: rgba(16, 20, 21, 0.9);
+  border-color: rgba(244, 243, 238, 0.12);
+  color: var(--ink);
+}
