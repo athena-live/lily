@@ -1176,3 +1176,19 @@ html[data-theme="dark"] .modal {
 html[data-theme="dark"] .btn-ghost {
   border-color: rgba(244, 243, 238, 0.2);
 }
+
+html[data-theme="dark"] .ref-link {
+  background: rgba(16, 20, 21, 0.8);
+  border-color: rgba(244, 243, 238, 0.12);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .stat-card {
+  background: rgba(16, 20, 21, 0.75);
+  border-color: rgba(244, 243, 238, 0.12);
+}
+
+html[data-theme="dark"] .content-card {
+  background: rgba(16, 20, 21, 0.85);
+  border-color: rgba(244, 243, 238, 0.12);
+}
