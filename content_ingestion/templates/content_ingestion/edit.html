@@ -3,18 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lily — Edit Content</title>
+    <title>Lily — Slop Detector</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
       :root {
-        --ink: #0f1a1c;
-        --ink-muted: #41565b;
-        --paper: #f4f1e9;
-        --accent: #d96c2c;
-        --mist: rgba(15, 26, 28, 0.08);
-        --glow: rgba(217, 108, 44, 0.16);
+        --ink: #0b1218;
+        --ink-muted: #4a5a66;
+        --paper: #f5f4f1;
+        --panel: #ffffff;
+        --accent: #1c4fd7;
+        --accent-dark: #123aa5;
+        --accent-soft: rgba(28, 79, 215, 0.12);
+        --mist: rgba(11, 18, 24, 0.08);
+        --glow: rgba(28, 79, 215, 0.22);
         --danger: #b12a2a;
+        --success: #2f7d55;
+        --gold: #e1b757;
       }
 
       * {
@@ -25,16 +30,17 @@
         margin: 0;
         font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
         color: var(--ink);
-        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
-          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
+        background:
+          radial-gradient(900px 500px at 15% 10%, rgba(28, 79, 215, 0.12) 0%, transparent 65%),
+          radial-gradient(900px 500px at 90% 0%, rgba(225, 183, 87, 0.18) 0%, transparent 70%),
           var(--paper);
         min-height: 100vh;
       }
 
       .page {
-        max-width: 1100px;
+        max-width: 1160px;
         margin: 0 auto;
-        padding: 40px 20px 80px;
+        padding: 36px 20px 80px;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -46,6 +52,11 @@
         align-items: center;
         justify-content: space-between;
         gap: 20px;
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(11, 18, 24, 0.08);
+        border-radius: 20px;
+        padding: 14px 20px;
+        box-shadow: 0 12px 30px rgba(11, 18, 24, 0.08);
       }
 
       .brand {
@@ -60,24 +71,34 @@
         width: 40px;
         height: 40px;
         border-radius: 14px;
-        background: linear-gradient(145deg, #ffe2c6, #d96c2c);
-        box-shadow: 0 10px 25px var(--glow);
+        background: linear-gradient(145deg, #e7eefc, #1c4fd7);
+        box-shadow: 0 12px 25px var(--glow);
         display: grid;
         place-items: center;
-        color: #5a210a;
+        color: #0f2b7f;
         font-weight: 700;
+      }
+
+      .brand-meta {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand-meta span {
+        font-size: 0.75rem;
+        color: var(--ink-muted);
       }
 
       .nav a {
         color: var(--ink-muted);
         text-decoration: none;
         font-size: 0.95rem;
-        margin-left: 14px;
+        margin-left: 18px;
       }
 
       .title {
         font-family: "Fraunces", serif;
-        font-size: clamp(2rem, 4vw, 3rem);
+        font-size: clamp(2.2rem, 4vw, 3.2rem);
         margin: 0 0 6px;
       }
 
@@ -86,12 +107,24 @@
         font-size: 0.95rem;
       }
 
+      .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: rgba(11, 18, 24, 0.06);
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+        margin-bottom: 10px;
+      }
+
       .card {
-        background: rgba(255, 255, 255, 0.85);
-        border: 1px solid rgba(217, 108, 44, 0.2);
+        background: var(--panel);
+        border: 1px solid rgba(11, 18, 24, 0.08);
         border-radius: 22px;
         padding: 24px;
-        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.12);
+        box-shadow: 0 20px 40px rgba(11, 18, 24, 0.12);
       }
 
       form {
@@ -108,12 +141,12 @@
       input,
       textarea {
         width: 100%;
-        border: 1px solid rgba(15, 26, 28, 0.12);
+        border: 1px solid rgba(11, 18, 24, 0.12);
         border-radius: 16px;
         padding: 12px 14px;
         font-size: 1rem;
         font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
-        background: #fffdf9;
+        background: #fbfbfd;
       }
 
       textarea {
@@ -134,7 +167,7 @@
         border-radius: 999px;
         font-weight: 600;
         background: var(--accent);
-        color: #fff8f2;
+        color: #f4f7ff;
         cursor: pointer;
         text-decoration: none;
         box-shadow: 0 12px 25px var(--glow);
@@ -142,9 +175,9 @@
       }
 
       .btn-ghost {
-        background: transparent;
+        background: rgba(11, 18, 24, 0.06);
         color: var(--ink);
-        border: 1px solid var(--mist);
+        border: 1px solid rgba(11, 18, 24, 0.1);
         box-shadow: none;
       }
 
@@ -168,7 +201,10 @@
       <header>
         <div class="brand">
           <div class="brand-badge">L</div>
-          <div>Lily</div>
+          <div class="brand-meta">
+            <div>Lily</div>
+            <span>Slop Detector</span>
+          </div>
         </div>
         <nav class="nav">
           <a href="{% url 'content_ingestion:list' %}">All content</a>
@@ -177,6 +213,7 @@
       </header>
 
       <section>
+        <div class="meta-pill">Edit ingestion</div>
         <h1 class="title">Edit content</h1>
         <div class="meta">Update name or raw text below.</div>
       </section>
