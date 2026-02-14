@@ -134,6 +134,47 @@
         margin-top: 10px;
       }
 
+      .ref-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .ref-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--mist);
+      }
+
+      .ref-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+      }
+
+      .ref-meta {
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        margin-top: 4px;
+      }
+
+      .badge {
+        background: rgba(217, 108, 44, 0.12);
+        color: var(--accent);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
       .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -289,6 +330,34 @@
           <a class="link" href="{% url 'home:subscription' %}">Choose a service</a>
         </div>
       {% endif %}
+
+      <div class="section">
+        <div class="section-title">Referral codes</div>
+        <div class="plan-note">
+          Generate a new code any time. Older codes stay active.
+        </div>
+        {% if referral_codes %}
+          <div class="ref-list">
+            {% for ref in referral_codes %}
+              <div class="ref-item">
+                <div>
+                  <div class="ref-code">{{ ref.code }}</div>
+                  <div class="ref-meta">Created {{ ref.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% if ref.is_active %}
+                  <span class="badge">Active</span>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="plan-note">No referral codes yet.</div>
+        {% endif %}
+        <form method="post" action="{% url 'home:generate_referral_code' %}">
+          {% csrf_token %}
+          <button class="btn btn-spaced" type="submit">Generate new code</button>
+        </form>
+      </div>
 
       <div class="row">
         <span>Slop Detector</span>

@@ -1,3 +1,6 @@
+import secrets
+import string
+
 from django.conf import settings
 from django.db import models
 
@@ -37,3 +40,32 @@ class UserThemePreference(models.Model):
 
     def __str__(self):
         return f"UserThemePreference(user_id={self.user_id}, theme={self.theme})"
+
+
+class ReferralCode(models.Model):
+    CODE_LENGTH = 10
+    CODE_ALPHABET = string.ascii_uppercase + string.digits
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="referral_codes"
+    )
+    code = models.CharField(max_length=32, unique=True, db_index=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"ReferralCode(user_id={self.user_id}, code={self.code})"
+
+    @classmethod
+    def _generate_code(cls, length=None):
+        size = length or cls.CODE_LENGTH
+        return "".join(secrets.choice(cls.CODE_ALPHABET) for _ in range(size))
+
+    @classmethod
+    def create_for_user(cls, user):
+        for _ in range(5):
+            candidate = cls._generate_code()
+            if not cls.objects.filter(code=candidate).exists():
+                return cls.objects.create(user=user, code=candidate)
+        candidate = cls._generate_code(cls.CODE_LENGTH + 4)
+        return cls.objects.create(user=user, code=candidate)

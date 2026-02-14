@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 import stripe
 import json
 
-from .models import SubscriptionSelection, UserThemePreference
+from .models import ReferralCode, SubscriptionSelection, UserThemePreference
 # Create your views here.
 
 
@@ -27,6 +27,10 @@ def index(request):
 @login_required
 def profile(request):
     selection = SubscriptionSelection.objects.filter(user=request.user).first()
+    referral_codes = (
+        ReferralCode.objects.filter(user=request.user)
+        .order_by("-created_at")
+    )
     plans = getattr(settings, "SUBSCRIPTION_PLANS", [])
     current_price_id = selection.stripe_price_id if selection else ""
     current_plan_name = "No service selected"
@@ -51,6 +55,7 @@ def profile(request):
         "plan_start_date": selection.stripe_current_period_start if selection else None,
         "username": request.user.username,
         "subscription_status": selection.stripe_status if selection else "",
+        "referral_codes": referral_codes,
         "canceled_or_ended": bool(
             selection
             and (
@@ -64,6 +69,13 @@ def profile(request):
         "theme": _get_user_theme(request.user),
     }
     return render(request, "home/profile.html", context)
+
+
+@login_required
+@require_POST
+def generate_referral_code(request):
+    ReferralCode.create_for_user(request.user)
+    return redirect("home:profile")
 
 
 def _get_user_theme(user):
