@@ -175,6 +175,55 @@
         white-space: nowrap;
       }
 
+      .stat-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        margin-top: 12px;
+      }
+
+      .stat-card {
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--mist);
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .stat-label {
+        color: var(--ink-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .stat-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-top: 6px;
+      }
+
+      .ref-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 0.9rem;
+      }
+
+      .ref-table th,
+      .ref-table td {
+        text-align: left;
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--mist);
+      }
+
+      .ref-table th {
+        color: var(--ink-muted);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
       .ref-actions {
         display: flex;
         gap: 10px;
@@ -382,6 +431,39 @@
           {% csrf_token %}
           <button class="btn btn-spaced" type="submit">Generate new code</button>
         </form>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Referral dashboard</div>
+        <div class="plan-note">Track who signed up with your links.</div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total signups</div>
+            <div class="stat-value">{{ referral_signup_count }}</div>
+          </div>
+        </div>
+        {% if referral_signups %}
+          <table class="ref-table">
+            <thead>
+              <tr>
+                <th>New user</th>
+                <th>Ref code</th>
+                <th>Signed up</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for signup in referral_signups %}
+                <tr>
+                  <td>{{ signup.user.email|default:signup.user.username }}</td>
+                  <td>{{ signup.ref_code.code|default:"-" }}</td>
+                  <td>{{ signup.created_at|date:"M d, Y" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="plan-note">No referral signups yet.</div>
+        {% endif %}
       </div>
 
       <div class="row">

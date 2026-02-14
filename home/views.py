@@ -13,7 +13,7 @@ from django.views.decorators.http import require_POST
 import stripe
 import json
 
-from .models import ReferralCode, SubscriptionSelection, UserThemePreference
+from .models import ReferralCode, ReferralSignup, SubscriptionSelection, UserThemePreference
 # Create your views here.
 
 
@@ -30,6 +30,11 @@ def profile(request):
     selection = SubscriptionSelection.objects.filter(user=request.user).first()
     referral_codes = (
         ReferralCode.objects.filter(user=request.user)
+        .order_by("-created_at")
+    )
+    referral_signups = (
+        ReferralSignup.objects.filter(referred_by=request.user)
+        .select_related("user", "ref_code")
         .order_by("-created_at")
     )
     plans = getattr(settings, "SUBSCRIPTION_PLANS", [])
@@ -57,6 +62,8 @@ def profile(request):
         "username": request.user.username,
         "subscription_status": selection.stripe_status if selection else "",
         "referral_codes": referral_codes,
+        "referral_signups": referral_signups,
+        "referral_signup_count": referral_signups.count(),
         "referral_signup_url": request.build_absolute_uri(reverse("account_signup")),
         "canceled_or_ended": bool(
             selection
