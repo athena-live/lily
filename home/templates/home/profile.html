@@ -175,6 +175,22 @@
         white-space: nowrap;
       }
 
+      .ref-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .ref-link {
+        width: 100%;
+        border: 1px solid var(--mist);
+        border-radius: 12px;
+        padding: 8px 10px;
+        background: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        color: var(--ink);
+      }
+
       .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -343,10 +359,19 @@
                 <div>
                   <div class="ref-code">{{ ref.code }}</div>
                   <div class="ref-meta">Created {{ ref.created_at|date:"M d, Y" }}</div>
+                  <input
+                    class="ref-link"
+                    type="text"
+                    readonly
+                    value="{{ referral_signup_url }}?ref={{ ref.code }}"
+                    aria-label="Referral link for {{ ref.code }}" />
                 </div>
-                {% if ref.is_active %}
-                  <span class="badge">Active</span>
-                {% endif %}
+                <div class="ref-actions">
+                  {% if ref.is_active %}
+                    <span class="badge">Active</span>
+                  {% endif %}
+                  <button class="btn btn-ghost" type="button" data-copy-link>Copy link</button>
+                </div>
               </div>
             {% endfor %}
           </div>
@@ -499,6 +524,19 @@
           setTheme(nextTheme, { persist: true });
         });
       }
+
+      document.querySelectorAll("[data-copy-link]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const card = button.closest(".ref-item");
+          const input = card ? card.querySelector(".ref-link") : null;
+          if (!input) return;
+          input.select();
+          input.setSelectionRange(0, input.value.length);
+          navigator.clipboard.writeText(input.value).catch(() => {
+            document.execCommand("copy");
+          });
+        });
+      });
     </script>
   </body>
 </html>

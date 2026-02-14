@@ -45,3 +45,14 @@ class SubscriptionRequiredMiddleware:
                 return redirect(self.subscription_path)
 
         return self.get_response(request)
+
+
+class ReferralCaptureMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        ref_code = (request.GET.get("ref") or request.GET.get("ref_code") or "").strip()
+        if ref_code and request.session is not None:
+            request.session["referral_code"] = ref_code
+        return self.get_response(request)

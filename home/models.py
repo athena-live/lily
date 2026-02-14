@@ -69,3 +69,23 @@ class ReferralCode(models.Model):
                 return cls.objects.create(user=user, code=candidate)
         candidate = cls._generate_code(cls.CODE_LENGTH + 4)
         return cls.objects.create(user=user, code=candidate)
+
+
+class ReferralSignup(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="referral_signup"
+    )
+    ref_code = models.ForeignKey(
+        ReferralCode, on_delete=models.SET_NULL, null=True, blank=True, related_name="signups"
+    )
+    referred_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="referrals_sent",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"ReferralSignup(user_id={self.user_id}, ref_code_id={self.ref_code_id})"

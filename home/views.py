@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.utils import timezone
 from datetime import timezone as dt_timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -56,6 +57,7 @@ def profile(request):
         "username": request.user.username,
         "subscription_status": selection.stripe_status if selection else "",
         "referral_codes": referral_codes,
+        "referral_signup_url": request.build_absolute_uri(reverse("account_signup")),
         "canceled_or_ended": bool(
             selection
             and (
