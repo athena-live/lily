@@ -3,20 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lily — Content Ingestion</title>
+    <title>Lily — Slop Detector</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
       :root {
-        --ink: #0f1a1c;
-        --ink-muted: #41565b;
-        --paper: #f4f1e9;
-        --accent: #d96c2c;
-        --accent-dark: #a44b1e;
-        --mist: rgba(15, 26, 28, 0.08);
-        --glow: rgba(217, 108, 44, 0.16);
+        --ink: #0b1218;
+        --ink-muted: #4a5a66;
+        --paper: #f5f4f1;
+        --panel: #ffffff;
+        --accent: #1c4fd7;
+        --accent-dark: #123aa5;
+        --accent-soft: rgba(28, 79, 215, 0.12);
+        --mist: rgba(11, 18, 24, 0.08);
+        --glow: rgba(28, 79, 215, 0.22);
         --danger: #b12a2a;
         --success: #2f7d55;
+        --gold: #e1b757;
       }
 
       * {
@@ -27,16 +30,17 @@
         margin: 0;
         font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
         color: var(--ink);
-        background: radial-gradient(800px 400px at 20% 10%, #fff4e3 0%, transparent 70%),
-          radial-gradient(800px 500px at 90% 0%, #e8f2ef 0%, transparent 70%),
+        background:
+          radial-gradient(900px 500px at 15% 10%, rgba(28, 79, 215, 0.12) 0%, transparent 65%),
+          radial-gradient(900px 500px at 90% 0%, rgba(225, 183, 87, 0.18) 0%, transparent 70%),
           var(--paper);
         min-height: 100vh;
       }
 
       .page {
-        max-width: 1100px;
+        max-width: 1160px;
         margin: 0 auto;
-        padding: 40px 20px 80px;
+        padding: 36px 20px 80px;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -47,6 +51,11 @@
         align-items: center;
         justify-content: space-between;
         gap: 20px;
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(11, 18, 24, 0.08);
+        border-radius: 20px;
+        padding: 14px 20px;
+        box-shadow: 0 12px 30px rgba(11, 18, 24, 0.08);
       }
 
       .brand {
@@ -61,30 +70,42 @@
         width: 40px;
         height: 40px;
         border-radius: 14px;
-        background: linear-gradient(145deg, #ffe2c6, #d96c2c);
-        box-shadow: 0 10px 25px var(--glow);
+        background: linear-gradient(145deg, #e7eefc, #1c4fd7);
+        box-shadow: 0 12px 25px var(--glow);
         display: grid;
         place-items: center;
-        color: #5a210a;
+        color: #0f2b7f;
         font-weight: 700;
+      }
+
+      .brand-meta {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand-meta span {
+        font-size: 0.75rem;
+        color: var(--ink-muted);
       }
 
       .nav a {
         color: var(--ink-muted);
         text-decoration: none;
         font-size: 0.95rem;
+        margin-left: 18px;
       }
 
       .shell {
-        margin-top: 50px;
+        margin-top: 38px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 28px;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 32px;
+        align-items: start;
       }
 
       .intro h1 {
         font-family: "Fraunces", serif;
-        font-size: clamp(2.2rem, 4vw, 3.3rem);
+        font-size: clamp(2.3rem, 4vw, 3.4rem);
         margin: 0 0 12px;
       }
 
@@ -93,14 +114,71 @@
         max-width: 680px;
         margin: 0;
         font-size: 1.05rem;
+        line-height: 1.6;
       }
 
       .card {
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid rgba(217, 108, 44, 0.2);
-        border-radius: 24px;
+        background: var(--panel);
+        border: 1px solid rgba(11, 18, 24, 0.08);
+        border-radius: 26px;
         padding: 28px;
-        box-shadow: 0 20px 40px rgba(15, 26, 28, 0.12);
+        box-shadow: 0 20px 40px rgba(11, 18, 24, 0.12);
+      }
+
+      .meta-card {
+        display: grid;
+        gap: 16px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: rgba(11, 18, 24, 0.06);
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+      }
+
+      .feature-grid {
+        display: grid;
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .feature {
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(28, 79, 215, 0.08);
+        border: 1px solid rgba(28, 79, 215, 0.2);
+      }
+
+      .feature h3 {
+        margin: 0 0 6px;
+        font-size: 1rem;
+      }
+
+      .feature p {
+        margin: 0;
+        color: var(--ink-muted);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .trust {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .trust span {
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+        background: rgba(11, 18, 24, 0.06);
+        border-radius: 999px;
+        padding: 6px 12px;
       }
 
       form {
@@ -117,16 +195,16 @@
       input,
       textarea {
         width: 100%;
-        border: 1px solid rgba(15, 26, 28, 0.12);
+        border: 1px solid rgba(11, 18, 24, 0.12);
         border-radius: 16px;
         padding: 12px 14px;
         font-size: 1rem;
         font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
-        background: #fffdf9;
+        background: #fbfbfd;
       }
 
       textarea {
-        min-height: 240px;
+        min-height: 260px;
         resize: vertical;
         line-height: 1.5;
       }
@@ -155,8 +233,14 @@
 
       .btn-primary {
         background: var(--accent);
-        color: #fff8f2;
+        color: #f4f7ff;
         box-shadow: 0 12px 25px var(--glow);
+      }
+
+      .btn-secondary {
+        background: rgba(11, 18, 24, 0.08);
+        color: var(--ink);
+        text-decoration: none;
       }
 
       .btn:hover {
@@ -182,9 +266,34 @@
         border: 1px solid rgba(47, 125, 85, 0.2);
       }
 
+      .form-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 4px;
+      }
+
+      .form-title h2 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      .form-title span {
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+        background: var(--accent-soft);
+        border-radius: 999px;
+        padding: 6px 12px;
+      }
+
       @media (max-width: 720px) {
         .page {
           padding: 32px 18px 60px;
+        }
+
+        .shell {
+          grid-template-columns: 1fr;
         }
 
         .card {
@@ -198,7 +307,10 @@
       <header>
         <div class="brand">
           <div class="brand-badge">L</div>
-          <div>Lily</div>
+          <div class="brand-meta">
+            <div>Lily</div>
+            <span>Slop Detector</span>
+          </div>
         </div>
         <nav class="nav">
           <a href="/">Home</a>
@@ -208,14 +320,38 @@
 
       <div class="shell">
         <div class="intro">
-          <h1>Capture raw content.</h1>
+          <div class="pill">Premium ingestion pipeline</div>
+          <h1>Slop Detector intake.</h1>
           <p>
-            Paste any text, give it a name, and we will store it exactly as-is. You can ingest a single
-            response or a full conversation chain — processing comes later.
+            Drop in raw text and we will preserve it with audit-ready metadata. This is the first step
+            in your paid-grade slop analysis pipeline — clean, private, and structured for review.
           </p>
+          <div class="feature-grid">
+            <div class="feature">
+              <h3>Lossless capture</h3>
+              <p>We retain formatting, line breaks, and full text for downstream detection.</p>
+            </div>
+            <div class="feature">
+              <h3>Secure storage</h3>
+              <p>Content stays tied to your account with controlled access and retention.</p>
+            </div>
+            <div class="feature">
+              <h3>Review-ready</h3>
+              <p>Save once, then route to inspection, QA, or training workflows.</p>
+            </div>
+          </div>
+          <div class="trust">
+            <span>Encrypted at rest</span>
+            <span>Team-ready exports</span>
+            <span>Instant availability</span>
+          </div>
         </div>
 
-        <div class="card">
+        <div class="card meta-card">
+          <div class="form-title">
+            <h2>New ingestion</h2>
+            <span>Paid plan</span>
+          </div>
           {% if saved %}
           <div class="alert alert-success">Saved. Add another if you'd like.</div>
           {% endif %}
@@ -230,7 +366,7 @@
                 id="name"
                 name="name"
                 type="text"
-                placeholder="Example: Client briefing notes"
+                placeholder="Example: Partner review notes"
                 value="{{ name }}"
                 maxlength="200"
                 required
@@ -244,10 +380,10 @@
                 placeholder="Paste raw text, logs, conversation, or draft copy here."
                 required
               >{{ content }}</textarea>
-              <div class="hint">We preserve formatting and whitespace.</div>
+              <div class="hint">We preserve formatting, whitespace, and line breaks.</div>
             </div>
             <div class="actions">
-              <button class="btn btn-primary" type="submit">Save content</button>
+              <button class="btn btn-primary" type="submit">Save to detector</button>
               <a class="btn btn-secondary" href="{% url 'content_ingestion:list' %}">View saved</a>
             </div>
           </form>
