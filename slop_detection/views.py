@@ -1,13 +1,17 @@
 import json
 import os
 
+from django.conf import settings
+from django.db import transaction
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 
 from content_ingestion.models import IngestedContent
+from home.models import SubscriptionSelection
 
 from .engine import analyze_content
 from .finetune import (
@@ -17,7 +21,14 @@ from .finetune import (
     get_fine_tune_job,
     upload_training_file,
 )
-from .models import ContentCorrection, FineTuneJob, SiteModelConfig, SlopReport, SlopReportCorrection
+from .models import (
+    ContentCorrection,
+    FineTuneJob,
+    SiteModelConfig,
+    SlopRateLimitUsage,
+    SlopReport,
+    SlopReportCorrection,
+)
 
 
 def _base_queryset(request):
@@ -37,11 +48,107 @@ def _get_active_model():
     return os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 
+def _get_client_ip(request):
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return (request.META.get("REMOTE_ADDR") or "").strip()
+
+
+def _is_subscription_active(selection):
+    if not selection:
+        return False
+    if not (selection.stripe_subscription_id or selection.stripe_price_id):
+        return False
+    if selection.stripe_status and selection.stripe_status not in ("active", "trialing"):
+        return False
+    if selection.stripe_cancel_at and selection.stripe_cancel_at <= timezone.now():
+        return False
+    if selection.stripe_current_period_end and selection.stripe_current_period_end <= timezone.now():
+        return False
+    return True
+
+
+def _get_plan_name(price_id):
+    if not price_id:
+        return ""
+    for plan in getattr(settings, "SUBSCRIPTION_PLANS", []):
+        if plan.get("price_id") == price_id:
+            return plan.get("name", "").strip()
+    return ""
+
+
+def _get_daily_limit(request):
+    user = getattr(request, "user", None)
+    if getattr(user, "is_authenticated", False) and getattr(user, "is_staff", False):
+        return None
+
+    if getattr(user, "is_authenticated", False):
+        selection = SubscriptionSelection.objects.filter(user=user).first()
+        if selection and _is_subscription_active(selection):
+            price_id = selection.stripe_price_id or ""
+            if price_id and price_id in settings.SLOP_PLAN_RATE_LIMITS:
+                return settings.SLOP_PLAN_RATE_LIMITS[price_id]
+            plan_name = _get_plan_name(price_id)
+            if plan_name and plan_name in settings.SLOP_PLAN_RATE_LIMITS:
+                return settings.SLOP_PLAN_RATE_LIMITS[plan_name]
+        return settings.SLOP_DEFAULT_DAILY_LIMIT
+    return settings.SLOP_ANON_DAILY_LIMIT
+
+
+def _consume_rate_limit(request):
+    limit = _get_daily_limit(request)
+    if limit is None:
+        return True, None, None
+    if limit <= 0:
+        return False, limit, 0
+
+    today = timezone.now().date()
+    user = getattr(request, "user", None)
+    if getattr(user, "is_authenticated", False):
+        lookup = {"user": user, "date": today}
+        defaults = {"count": 0}
+    else:
+        ip_address = _get_client_ip(request) or "unknown"
+        lookup = {"user": None, "ip_address": ip_address, "date": today}
+        defaults = {"count": 0}
+
+    with transaction.atomic():
+        usage, _ = SlopRateLimitUsage.objects.select_for_update().get_or_create(
+            **lookup, defaults=defaults
+        )
+        if usage.count >= limit:
+            remaining = max(0, limit - usage.count)
+            return False, limit, remaining
+        usage.count += 1
+        usage.save(update_fields=["count", "updated_at"])
+        remaining = max(0, limit - usage.count)
+    return True, limit, remaining
+
+
 @require_http_methods(["POST"])
 def analyze(request, content_id):
     item = _base_queryset(request).filter(id=content_id).first()
     if not item:
         raise Http404("Content not found.")
+
+    wants_json = request.GET.get("format") == "json" or request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest"
+    allowed, limit, remaining = _consume_rate_limit(request)
+    if not allowed:
+        message = "Daily slop detector rate limit exceeded. Please try again tomorrow."
+        if wants_json:
+            response = JsonResponse(
+                {"error": "rate_limit", "detail": message, "limit": limit, "remaining": remaining},
+                status=429,
+            )
+        else:
+            response = HttpResponse(message, status=429)
+        if limit is not None:
+            response["X-RateLimit-Limit"] = str(limit)
+            response["X-RateLimit-Remaining"] = str(remaining)
+        return response
 
     active_model = _get_active_model()
     report = analyze_content(item.raw_text, model_override=active_model)
@@ -51,12 +158,14 @@ def analyze(request, content_id):
         content=item,
         report=report,
     )
-    wants_json = request.GET.get("format") == "json" or request.headers.get(
-        "x-requested-with"
-    ) == "XMLHttpRequest"
     if wants_json:
-        return JsonResponse(report)
-    return render(request, "slop_detection/report_detail.html", {"report": saved_report})
+        response = JsonResponse(report)
+    else:
+        response = render(request, "slop_detection/report_detail.html", {"report": saved_report})
+    if limit is not None:
+        response["X-RateLimit-Limit"] = str(limit)
+        response["X-RateLimit-Remaining"] = str(remaining)
+    return response
 
 
 @require_http_methods(["GET"])

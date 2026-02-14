@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 from content_ingestion.models import IngestedContent
 
@@ -111,3 +112,35 @@ class SiteModelConfig(models.Model):
 
     def __str__(self):
         return f"SiteModelConfig(id={self.id}, current_model={self.current_model})"
+
+
+class SlopRateLimitUsage(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="slop_rate_limits",
+    )
+    ip_address = models.CharField(max_length=45, blank=True, default="")
+    date = models.DateField()
+    count = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "date"],
+                condition=Q(user__isnull=False),
+                name="slop_rate_limit_user_date_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["ip_address", "date"],
+                condition=Q(user__isnull=True),
+                name="slop_rate_limit_ip_date_unique",
+            ),
+        ]
+
+    def __str__(self):
+        owner = self.user_id or self.ip_address or "unknown"
+        return f"SlopRateLimitUsage(owner={owner}, date={self.date}, count={self.count})"

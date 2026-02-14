@@ -246,6 +246,34 @@ def _parse_subscription_plans(raw_value):
 
 SUBSCRIPTION_PLANS = _parse_subscription_plans(os.environ.get("SUBSCRIPTION_PLANS", ""))
 
+
+def _parse_slop_rate_limits(raw_value):
+    limits = {}
+    for entry in raw_value.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        if "|" in entry:
+            key, value = entry.split("|", 1)
+        elif ":" in entry:
+            key, value = entry.split(":", 1)
+        else:
+            continue
+        key = key.strip()
+        value = value.strip()
+        if not key or not value:
+            continue
+        try:
+            limits[key] = int(value)
+        except ValueError:
+            continue
+    return limits
+
+
+SLOP_PLAN_RATE_LIMITS = _parse_slop_rate_limits(os.environ.get("SLOP_PLAN_RATE_LIMITS", ""))
+SLOP_DEFAULT_DAILY_LIMIT = int(os.environ.get("SLOP_DEFAULT_DAILY_LIMIT", "10"))
+SLOP_ANON_DAILY_LIMIT = int(os.environ.get("SLOP_ANON_DAILY_LIMIT", "3"))
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
