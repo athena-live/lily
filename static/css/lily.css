@@ -1130,6 +1130,24 @@ html[data-theme="dark"] .panel {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
+html[data-theme="dark"] header {
+  background: rgba(16, 20, 21, 0.92);
+  border-color: rgba(244, 243, 238, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .nav,
+html[data-theme="dark"] .nav a,
+html[data-theme="dark"] .brand-meta span,
+html[data-theme="dark"] .brand-subtitle {
+  color: var(--ink-muted);
+}
+
+html[data-theme="dark"] .brand-badge {
+  background: linear-gradient(145deg, rgba(240, 165, 109, 0.2), rgba(240, 165, 109, 0.6));
+  color: #f6c198;
+}
+
 html[data-theme="dark"] .hero-visual {
   border-color: rgba(244, 243, 238, 0.08);
   background: linear-gradient(135deg, rgba(24, 30, 31, 0.9), rgba(14, 18, 19, 0.8));
