@@ -59,6 +59,10 @@
         margin-top: 18px;
       }
 
+      .actions form {
+        margin: 0;
+      }
+
       .btn {
         border: none;
         padding: 10px 18px;
@@ -115,6 +119,10 @@
       <div class="actions">
         <a class="btn" href="{% url 'home:profile' %}">Back to profile</a>
         <a class="btn btn-secondary" href="/">Back to home</a>
+        <form method="post" action="{% url 'account_logout' %}">
+          {% csrf_token %}
+          <button class="btn btn-secondary" type="submit">Log out</button>
+        </form>
       </div>
     </div>
     <script>
