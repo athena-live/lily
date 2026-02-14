@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.db.models import Q
 from django.utils import timezone
 
-from home.models import SubscriptionSelection
+from home.models import ReferralCode, ReferralSignup, SubscriptionSelection
 
 
 class SubscriptionRequiredMiddleware:
@@ -56,3 +56,25 @@ class ReferralCaptureMiddleware:
         if ref_code and request.session is not None:
             request.session["referral_code"] = ref_code
         return self.get_response(request)
+
+
+class ReferralAttributionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if not request.user.is_authenticated or request.session is None:
+            return response
+        if ReferralSignup.objects.filter(user=request.user).exists():
+            return response
+        ref_code_value = request.session.pop("referral_code", "")
+        if not ref_code_value:
+            return response
+        ref_code = ReferralCode.objects.filter(code=ref_code_value, is_active=True).first()
+        if not ref_code:
+            return response
+        ReferralSignup.objects.create(
+            user=request.user, ref_code=ref_code, referred_by=ref_code.user
+        )
+        return response
